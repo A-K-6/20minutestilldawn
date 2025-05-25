@@ -1,0 +1,16 @@
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+eclipse.project.name = appName + '-core'
+
+dependencies {
+  api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+  api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  api "com.crashinvaders.lml:gdx-autumn-mvc:$lmlVersion"
+  api "com.crashinvaders.lml:gdx-autumn:$lmlVersion"
+  api "com.crashinvaders.lml:gdx-kiwi:$lmlVersion"
+  api "com.crashinvaders.lml:gdx-lml:$lmlVersion"
+  implementation "com.kotcrab.vis:vis-ui:1.5.0" // Check for the latest version
+  implementation "org.xerial:sqlite-jdbc:3.45.1.0" // Check for the latest version if needed
+  if(enableGraalNative == 'true') {
+    implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
+  }
+}
