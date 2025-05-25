@@ -105,7 +105,7 @@ public class RegistrationMenuController extends BaseMenuController {
             case "skip_as_guest":
                 // Handle guest login
                 Gdx.app.log("RegistrationController", "Playing as guest.");
-                gameInstance.setGameScreen(); // Go directly to game screen
+                gameInstance.setMainMenuScreen(); // Go directly to game screen
                 break;
             case "back_to_login":
                 gameInstance.setLoginScreen(); // Navigate to login screen
