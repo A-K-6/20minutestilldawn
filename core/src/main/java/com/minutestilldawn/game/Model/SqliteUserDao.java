@@ -22,12 +22,12 @@ public class SqliteUserDao implements UserDao {
             Gdx.app.log("SqliteUserDao", "Database connection established to: " + dbPath);
 
             String createTableSQL = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
-                                    "username TEXT PRIMARY KEY," +
-                                    "password TEXT NOT NULL," +
-                                    "security_question_index INTEGER NOT NULL," +
-                                    "security_answer TEXT NOT NULL," +
-                                    "avatar_id INTEGER NOT NULL" +
-                                    ");";
+                    "username TEXT PRIMARY KEY," +
+                    "password TEXT NOT NULL," +
+                    "security_question_index INTEGER NOT NULL," +
+                    "security_answer TEXT NOT NULL," +
+                    "avatar_id INTEGER NOT NULL" +
+                    ");";
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute(createTableSQL);
                 Gdx.app.log("SqliteUserDao", "Table '" + TABLE_NAME + "' ensured to exist.");
@@ -50,7 +50,8 @@ public class SqliteUserDao implements UserDao {
             return false;
         }
 
-        String insertSQL = "INSERT INTO " + TABLE_NAME + " (username, password, security_question_index, security_answer, avatar_id) VALUES (?, ?, ?, ?, ?);";
+        String insertSQL = "INSERT INTO " + TABLE_NAME
+                + " (username, password, security_question_index, security_answer, avatar_id) VALUES (?, ?, ?, ?, ?);";
         try (PreparedStatement pstmt = connection.prepareStatement(insertSQL)) {
             pstmt.setString(1, user.getUsername());
             pstmt.setString(2, user.getPassword()); // Remember: hash in production!
@@ -73,7 +74,8 @@ public class SqliteUserDao implements UserDao {
             return null;
         }
 
-        String selectSQL = "SELECT username, password, security_question_index, security_answer, avatar_id FROM " + TABLE_NAME + " WHERE username = ?;";
+        String selectSQL = "SELECT username, password, security_question_index, security_answer, avatar_id FROM "
+                + TABLE_NAME + " WHERE username = ?;";
         try (PreparedStatement pstmt = connection.prepareStatement(selectSQL)) {
             pstmt.setString(1, username);
             ResultSet rs = pstmt.executeQuery();
@@ -104,7 +106,8 @@ public class SqliteUserDao implements UserDao {
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
                 String storedPassword = rs.getString("password");
-                // In production, use a secure password verification library (e.g., BCrypt.checkpw)
+                // In production, use a secure password verification library (e.g.,
+                // BCrypt.checkpw)
                 return storedPassword.equals(password); // Simple comparison for this example
             }
         } catch (SQLException e) {
@@ -131,6 +134,25 @@ public class SqliteUserDao implements UserDao {
             Gdx.app.error("SqliteUserDao", "Error checking if user exists: " + username, e);
         }
         return false;
+    }
+
+    @Override
+    public int getSecurityQuestion(String username) {
+        if (connection == null) {
+            Gdx.app.error("SqliteUserDao", "Database not initialized.");
+            return -1;
+        }
+        String selectSQL = "SELECT security_question_index FROM " + TABLE_NAME + " WHERE username = ?;";
+        try (PreparedStatement pstmt = connection.prepareStatement(selectSQL)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("security_question_index");
+            }
+        } catch (SQLException e) {
+            Gdx.app.error("SqliteUserDao", "Error getting security question for user: " + username, e);
+        }
+        return -1;
     }
 
     @Override

@@ -6,5 +6,6 @@ public interface UserDao {
     User getUserByUsername(String username);
     boolean validateUser(String username, String password);
     boolean userExists(String username);
+    int getSecurityQuestion(String username); 
     void dispose(); // For closing connections
 }

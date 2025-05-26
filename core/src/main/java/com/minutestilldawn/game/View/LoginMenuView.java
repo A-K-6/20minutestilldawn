@@ -88,9 +88,11 @@ public class LoginMenuView extends BaseMenuView {
         // --- Buttons ---
         TextButton loginButton = new TextButton("Login", skin);
         TextButton registerButton = new TextButton("Register", skin); // To go to registration screen
+        TextButton forgotPasswordButton = new TextButton("Forgot Password", skin); // New button added
 
         table.add(loginButton).colspan(2).width(200).height(50).padTop(20).row();
         table.add(registerButton).colspan(2).width(200).height(50).padTop(10).row();
+        table.add(forgotPasswordButton).colspan(2).width(200).height(50).padTop(10).row();
 
         // --- Listeners ---
         loginButton.addListener(event -> {
@@ -103,6 +105,13 @@ public class LoginMenuView extends BaseMenuView {
         registerButton.addListener(event -> {
             if (registerButton.isPressed()) {
                 controller.onButtonClicked("register");
+            }
+            return false;
+        });
+
+        forgotPasswordButton.addListener(event -> {
+            if (forgotPasswordButton.isPressed()) {
+                controller.onForgotPasswordClicked(usernameField.getText());
             }
             return false;
         });

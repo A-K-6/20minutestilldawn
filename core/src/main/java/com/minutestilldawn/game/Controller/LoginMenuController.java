@@ -39,7 +39,7 @@ public class LoginMenuController extends BaseMenuController {
                 view.setValidationMessage("Login successful!", Color.GREEN);
             Gdx.app.log("LoginController", "User logged in: " + username);
             // TODO: Store logged-in user information (e.g., in a session manager)
-            gameInstance.setMainMenuScreen(); 
+            gameInstance.setMainMenuScreen();
             if (view != null)
                 view.clearInputFields(); // Clear fields after successful login
         } else {
@@ -64,5 +64,39 @@ public class LoginMenuController extends BaseMenuController {
         if (userDao != null) {
             userDao.dispose();
         }
+    }
+
+public void onForgotPasswordClicked(String username) {
+    if (username.isEmpty()) {
+        if (view != null)
+            view.setValidationMessage("Please enter your username for password recovery.", Color.RED);
+        return;
+    }
+
+    int securityQuestionId = userDao.getSecurityQuestion(username);
+    if (securityQuestionId < 0) { // Index not found
+        if (view != null)
+            view.setValidationMessage("Username not found.", Color.RED);
+        return;
+    }
+    
+    // Define the security questions in a shared location. You could also make these public static in RegistrationMenuController.
+    String[] securityQuestions = {
+        "What is your best friend's name?",
+        "What was your first pet's name?",
+        "What city were you born in?",
+        "What is your favorite book?",
+        "What is your favorite color?"
+    };
+    
+    // Get the corresponding security question phrase.
+    String securityQuestionPhrase = (securityQuestionId >= 0 && securityQuestionId < securityQuestions.length)
+            ? securityQuestions[securityQuestionId] : "Unknown security question";
+    
+    // Now prompt the user for an answer and new password (for example, using a dialog).
+    Gdx.app.log("LoginController", "Security question for " + username + ": " + securityQuestionPhrase);
+    if (view != null)
+        view.setValidationMessage("Security question: " + securityQuestionPhrase, Color.BLUE);
+    
     }
 }
