@@ -32,9 +32,9 @@ public class LoginMenuController extends BaseMenuController {
                 view.setValidationMessage("Username and password are required.", Color.RED);
             return;
         }
-
+        String hashPass = Tools.hashPassword(password);
         // --- Validate User against Database ---
-        if (userDao.validateUser(username, password)) {
+        if (userDao.validateUser(username, hashPass)) {
             if (view != null)
                 view.setValidationMessage("Login successful!", Color.GREEN);
             Gdx.app.log("LoginController", "User logged in: " + username);

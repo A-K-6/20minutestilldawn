@@ -15,7 +15,7 @@ public class RegistrationMenuController extends BaseMenuController {
     private UserDao userDao; // Use the interface
 
     private String[] securityQuestions = {
-        "What is your mother's maiden name?",
+        "What is your best friend's name?",
         "What was your first pet's name?",
         "What city were you born in?",
         "What is your favorite book?",

@@ -1,9 +1,15 @@
 package com.minutestilldawn.game.View;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.minutestilldawn.game.Main;
 import com.minutestilldawn.game.Controller.MainMenuController;
+import com.minutestilldawn.game.Model.GameAssetManager;
 
 public class MainMenuView extends BaseMenuView {
 
@@ -12,19 +18,21 @@ public class MainMenuView extends BaseMenuView {
     public MainMenuView(MainMenuController controller, Skin skin) {
         super(skin);
         this.controller = controller;
-        // The controller needs a reference to this view for specific view interactions if any
+        // The controller needs a reference to this view for specific view interactions
+        // if any
         this.controller.setView(this); // BaseMenuController has setView
     }
 
     @Override
     protected void setupUI() {
-        // --- Game Title ---
-        Label gameTitle = new Label("20 MINUTES TILL DAWN", skin, "title"); // Use a "title" style from your skin
-        if (!skin.has("title", Label.LabelStyle.class)) {
-            // Fallback if "title" style is not defined in skin
-            gameTitle.setStyle(skin.get("default", Label.LabelStyle.class));
-            gameTitle.setFontScale(2.0f); // Make it larger if no specific style
-        }
+        Texture backgroundTexture = Main.getInstance().getAssetManager()
+                .get(GameAssetManager.LOGIN_REGISTER_MENU_BACKGROUND, Texture.class);
+        Drawable background = new TextureRegionDrawable(new TextureRegion(backgroundTexture));
+
+        table.setFillParent(true); // Ensures the table takes up the full screen/parent actor size
+
+        // Set the background of the table to the login menu background
+        table.setBackground(background);
 
 
         // --- Menu Buttons ---
@@ -37,8 +45,7 @@ public class MainMenuView extends BaseMenuView {
         // --- Layout using Table ---
         table.center(); // Center the table in the screen
         table.defaults().pad(10).width(200).height(50); // Default padding and size for buttons
-
-        table.add(gameTitle).padBottom(50).row(); // Title at the top, extra padding below
+        
 
         table.add(playButton).row();
         table.add(settingsButton).row();
