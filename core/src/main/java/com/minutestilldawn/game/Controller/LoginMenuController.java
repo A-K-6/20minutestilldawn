@@ -39,7 +39,7 @@ public class LoginMenuController extends BaseMenuController {
                 view.setValidationMessage("Login successful!", Color.GREEN);
             Gdx.app.log("LoginController", "User logged in: " + username);
             // TODO: Store logged-in user information (e.g., in a session manager)
-            gameInstance.setGameScreen(); // Navigate to main game screen
+            gameInstance.setMainMenuScreen(); 
             if (view != null)
                 view.clearInputFields(); // Clear fields after successful login
         } else {
