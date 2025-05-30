@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.math.Vector2;
 import com.minutestilldawn.game.Model.CharacterType; // To create player
 import com.minutestilldawn.game.Model.GameAssetManager;
+import com.minutestilldawn.game.Model.GameState;
 import com.minutestilldawn.game.Model.Player;
 import com.minutestilldawn.game.Model.Bullet; // To manage bullets
 import com.minutestilldawn.game.Model.Enemy; // To manage enemies
@@ -16,15 +17,18 @@ import java.util.List;
 public class GameController extends InputAdapter { // Extends InputAdapter for input events
 
     private GameAssetManager assetManager;
+    private GameState gameState; 
     private Player player;
     private List<Bullet> bullets; // List to hold active bullets
     private List<Enemy> enemies; // List to hold active enemies
 
-    public GameController(GameAssetManager assetManager) {
+    public GameController(GameAssetManager assetManager, GameState gameState) {
         this.assetManager = assetManager;
         // Initialize player with a default character type and loaded atlas
         // Make sure "player_atlas" is loaded in your GameAssetManager
-        this.player = new Player(CharacterType.SHANA, assetManager.getPlayerSpriteAtlas());
+        this.gameState = gameState; 
+        this.assetManager = assetManager; 
+        this.player = new Player(gameState.getPlayer(),CharacterType.SHANA, assetManager.getPlayerSpriteAtlas());
         this.bullets = new ArrayList<>();
         this.enemies = new ArrayList<>();
 

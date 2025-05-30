@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 public class Player {
+    private User user; 
     private CharacterType characterType;
     private Vector2 position;
     private float speed;
@@ -23,7 +24,8 @@ public class Player {
     private float invincibilityTimer;
     private static final float INVINCIBILITY_DURATION = 1.0f; // 1 second invincibility [cite: 80]
 
-    public Player(CharacterType type, TextureAtlas atlas) {
+    public Player(User user, CharacterType type, TextureAtlas atlas) {
+        this.user = user; 
         this.characterType = type;
         this.playerAtlas = atlas;
         this.position = new Vector2(400, 300); // Starting position (center of a 800x600 screen)

@@ -37,6 +37,9 @@ public class MainMenuController extends BaseMenuController {
             case "hint":
                 Gdx.app.log("MainMenuController", "Switching to Scoreboard...");
                 gameInstance.setScoreboardScreen(); // You will create this method in Main
+            case "logout":
+                Gdx.app.log("MainMenuController", "Logout button pressed...");
+                
             case "exit":
                 Gdx.app.log("MainMenuController", "Exiting game...");
                 Gdx.app.exit(); // Exit the application

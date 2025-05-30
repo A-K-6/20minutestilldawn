@@ -44,7 +44,9 @@ public class MainMenuView extends BaseMenuView {
         TextButton continueSavedGameButton = new TextButton("Continue Saved Game", skin);
         TextButton logoutButton = new TextButton("Logout", skin);
         TextButton exitButton = new TextButton("Exit", skin);
-
+        // TODO‌: Show the avatar pic (5 points) with the pictures they have. 
+        // TODO:‌‌ show the User‌Scors
+        // TODO‌: show the Current user Name. 
         // --- Layout using Table ---
         table.center(); // Center the table in the screen
         table.defaults().pad(10).width(200).height(50); // Default padding and size for buttons
@@ -56,7 +58,7 @@ public class MainMenuView extends BaseMenuView {
         table.add(scoreboardButton).row();
         table.add(hintButton).row();
         table.add(continueSavedGameButton).row();
-        table.add(logoutButton).row();
+        table.add(logoutButton).row(); //TODO: do the Logout Works Properly 
         table.add(exitButton).row();
 
         // --- Add Listeners to Buttons ---
@@ -91,6 +93,13 @@ public class MainMenuView extends BaseMenuView {
             }
             return false;
         });
+        logoutButton.addListener(event -> {
+            if (logoutButton.isPressed()) {
+                controller.onButtonClicked("logout");
+            }
+            return false;
+        });
+
 
         // Exit Button
         exitButton.addListener(event -> {

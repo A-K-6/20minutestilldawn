@@ -12,12 +12,14 @@ import com.minutestilldawn.game.Controller.GameController; // Import your GameCo
 import com.minutestilldawn.game.Model.Bullet;
 import com.minutestilldawn.game.Model.Enemy;
 import com.minutestilldawn.game.Model.GameAssetManager;
+import com.minutestilldawn.game.Model.GameState;
 import com.badlogic.gdx.scenes.scene2d.Stage; // For HUD
 
 public class GameScreenView implements Screen {
 
     private SpriteBatch batch;
     private GameAssetManager assetManager;
+    private GameState gameState; 
     private GameController gameController; // The game logic controller
 
     private OrthographicCamera camera;
@@ -30,7 +32,7 @@ public class GameScreenView implements Screen {
         this.assetManager = assetManager;
         this.batch = Main.getBatch(); // Use the shared batch from Main
 
-        this.gameController = new GameController(assetManager); // Instantiate your GameController
+        this.gameController = new GameController(assetManager, gameState); // Instantiate your GameController
 
         camera = new OrthographicCamera();
         // Set up camera to center on character [cite: 96]
