@@ -40,6 +40,9 @@ public class MainMenuView extends BaseMenuView {
         TextButton settingsButton = new TextButton("Settings", skin);
         TextButton profileButton = new TextButton("Profile", skin);
         TextButton scoreboardButton = new TextButton("Scoreboard", skin);
+        TextButton hintButton = new TextButton("hint", skin);
+        TextButton continueSavedGameButton = new TextButton("Continue Saved Game", skin);
+        TextButton logoutButton = new TextButton("Logout", skin);
         TextButton exitButton = new TextButton("Exit", skin);
 
         // --- Layout using Table ---
@@ -51,6 +54,9 @@ public class MainMenuView extends BaseMenuView {
         table.add(settingsButton).row();
         table.add(profileButton).row();
         table.add(scoreboardButton).row();
+        table.add(hintButton).row();
+        table.add(continueSavedGameButton).row();
+        table.add(logoutButton).row();
         table.add(exitButton).row();
 
         // --- Add Listeners to Buttons ---
