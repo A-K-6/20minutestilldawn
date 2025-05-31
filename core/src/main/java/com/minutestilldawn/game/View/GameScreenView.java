@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.minutestilldawn.game.Main;
 import com.minutestilldawn.game.Controller.GameController;
 import com.minutestilldawn.game.Model.*;
+import com.minutestilldawn.game.Model.Tree;
 
 public class GameScreenView extends ScreenAdapter {
 
