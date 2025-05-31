@@ -20,8 +20,9 @@ public class Weapon {
     // public float getBulletSpeed() { return bulletSpeed; }
     // Example: new Weapon("Revolver", 20, 6, 1.0f, 1, 600f);
 
-    public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime, float bulletSpeed) {
+    public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime) {
         this(name, baseDamage, maxAmmo, reloadTime, 1, 500f); // Default to 1 projectile per shot
+        // TODO: BULLET SPEED NEED TO BE DONE : ) 
     }
 
     public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime, int projectilesPerShot, float bulletSpeed) {
