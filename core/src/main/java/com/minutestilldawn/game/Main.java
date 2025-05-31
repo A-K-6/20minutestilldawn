@@ -53,10 +53,6 @@ public class Main extends Game {
         assetManager = new GameAssetManager();
         // It's good practice to load essential UI assets first, like skins and fonts
         // For avatar placeholders in MainMenu:
-        assetManager.load("avatars/default_avatar.png", Texture.class); // Load a default
-        // Potentially load other common avatars if paths are known and fixed
-        // assetManager.load("avatars/avatar_1.png", Texture.class);
-        // assetManager.load("avatars/avatar_2.png", Texture.class);
         assetManager.loadAssets(); // Load all other assets
         assetManager.finishLoading();
         uiSkin = assetManager.getPixthulhuSkin();

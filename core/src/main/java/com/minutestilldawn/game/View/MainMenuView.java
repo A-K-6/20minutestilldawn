@@ -5,11 +5,13 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.minutestilldawn.game.Main;
 import com.minutestilldawn.game.Controller.MainMenuController;
 import com.minutestilldawn.game.Model.GameAssetManager;
+import com.minutestilldawn.game.Model.User;
 
 public class MainMenuView extends BaseMenuView {
 
@@ -34,6 +36,34 @@ public class MainMenuView extends BaseMenuView {
         // Set the background of the table to the login menu background
         table.setBackground(background);
 
+        User user = Main.getInstance().getCurrentUser();
+        boolean isGuest = Main.getInstance().isGuestSession();
+        // Avatar
+        Texture avatarTexture;
+        if (isGuest || user == null) {
+            avatarTexture = Main.getInstance().getAssetManager().get("avatars/default_avatar.png", Texture.class);
+        } else {
+            // Example: avatars/avatar_1.png, avatars/avatar_2.png, etc.
+            String avatarPath = "avatars/avatar_" + user.getAvatarId() + ".png";
+            if (Main.getInstance().getAssetManager().isLoaded(avatarPath)) {
+                avatarTexture = Main.getInstance().getAssetManager().get(avatarPath, Texture.class);
+            } else {
+                avatarTexture = Main.getInstance().getAssetManager().get(GameAssetManager.Default_Avatar,
+                        Texture.class);
+            }
+        }
+        Image avatarImage = new Image(avatarTexture);
+        table.add(avatarImage).size(96, 96).padBottom(10).row();
+        // User Name
+        String usernameText = isGuest || user == null ? "Guest" : user.getUsername();
+        Label usernameLabel = new Label("User: " + usernameText, skin);
+        table.add(usernameLabel).padBottom(5).row();
+        if (!isGuest && user != null) {
+            Label scoreLabel = new Label("Highest Score: " + user.getHighestScore(), skin);
+            Label killsLabel = new Label("Total Kills: " + user.getTotalKills(), skin);
+            table.add(scoreLabel).padBottom(2).row();
+            table.add(killsLabel).padBottom(10).row();
+        }
 
         // --- Menu Buttons ---
         TextButton playButton = new TextButton("Play", skin);
@@ -44,13 +74,12 @@ public class MainMenuView extends BaseMenuView {
         TextButton continueSavedGameButton = new TextButton("Continue Saved Game", skin);
         TextButton logoutButton = new TextButton("Logout", skin);
         TextButton exitButton = new TextButton("Exit", skin);
-        // TODO‌: Show the avatar pic (5 points) with the pictures they have. 
+        // TODO‌: Show the avatar pic (5 points) with the pictures they have.
         // TODO:‌‌ show the User‌Scors
-        // TODO‌: show the Current user Name. 
+        // TODO‌: show the Current user Name.
         // --- Layout using Table ---
         table.center(); // Center the table in the screen
         table.defaults().pad(10).width(200).height(50); // Default padding and size for buttons
-        
 
         table.add(playButton).row();
         table.add(settingsButton).row();
@@ -58,7 +87,7 @@ public class MainMenuView extends BaseMenuView {
         table.add(scoreboardButton).row();
         table.add(hintButton).row();
         table.add(continueSavedGameButton).row();
-        table.add(logoutButton).row(); //TODO: do the Logout Works Properly 
+        table.add(logoutButton).row(); // TODO: do the Logout Works Properly
         table.add(exitButton).row();
 
         // --- Add Listeners to Buttons ---
@@ -99,7 +128,6 @@ public class MainMenuView extends BaseMenuView {
             }
             return false;
         });
-
 
         // Exit Button
         exitButton.addListener(event -> {

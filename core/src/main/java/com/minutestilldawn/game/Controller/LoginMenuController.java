@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.minutestilldawn.game.Main;
 import com.minutestilldawn.game.Model.SqliteUserDao; // Use the SQLite DAO
+import com.minutestilldawn.game.Model.User;
 import com.minutestilldawn.game.Model.UserDao;
 import com.minutestilldawn.game.View.BaseMenuView;
 import com.minutestilldawn.game.View.LoginMenuView;
@@ -38,8 +39,8 @@ public class LoginMenuController extends BaseMenuController {
             if (view != null)
                 view.setValidationMessage("Login successful!", Color.GREEN);
             Gdx.app.log("LoginController", "User logged in: " + username);
-            // TODO: Store logged-in user information (e.g., in a session manager)
-            // TODO: Set Current user and Player. 
+            User user = userDao.getUserByUsername(username); 
+            gameInstance.setCurrentUser(user);
     
             gameInstance.setMainMenuScreen();
             if (view != null)
