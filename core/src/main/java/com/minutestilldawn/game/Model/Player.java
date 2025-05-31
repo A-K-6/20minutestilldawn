@@ -4,48 +4,37 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array; // For managing active abilities/effects
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 
 public class Player {
-    private User user; // Can be null if guest
+    private User user;
     private CharacterType characterType;
     private Vector2 position;
-    private float currentSpeed; // Can be modified by abilities
+    private float currentSpeed;
     private int maxHp;
     private int currentHp;
     private int xp;
     private int level;
     private Weapon currentWeapon;
-
-    // Visuals
     private TextureAtlas playerAtlas;
     private TextureRegion currentFrame;
-
-    // Game mechanics
     private float invincibilityTimer;
-    private static final float INVINCIBILITY_DURATION = 1.0f; // 1 second invincibility
-    // Active ability effects
-    // Example: A temporary speed boost or damage boost
+    private static final float INVINCIBILITY_DURATION = 1.0f;
 
     private static class ActiveAbilityEffect {
         Ability ability;
-        float durationTimer; // For timed abilities like DAMAGER or SPEEDY
-
+        float durationTimer;
         ActiveAbilityEffect(Ability ability) {
             this.ability = ability;
             switch (ability) {
-                case DAMAGER:
-                case SPEEDY:
-                    this.durationTimer = 10.0f; // 10 seconds duration as per PDF
-                    break;
-                default:
-                    this.durationTimer = -1; // Not timed / permanent until changed
-                    break;
+                case DAMAGER: case SPEEDY: this.durationTimer = 10.0f; break;
+                default: this.durationTimer = -1; break;
             }
         }
     }
-
     private Array<ActiveAbilityEffect> activeEffects;
+    private Vector2 aimDirection = new Vector2(1, 0); // Default aim right for auto-aim
 
     public Player(User user, CharacterType type, TextureAtlas atlas, Weapon startingWeapon) {
         this.user = user;
@@ -53,64 +42,97 @@ public class Player {
         this.playerAtlas = atlas;
         this.currentWeapon = startingWeapon;
         this.activeEffects = new Array<>();
-
-        // Initialize stats based on CharacterType
         this.maxHp = type.getBaseHp();
         this.currentHp = this.maxHp;
-        this.currentSpeed = type.getBaseSpeed();
-
-        this.position = new Vector2(400, 300); // Default starting position
+        this.currentSpeed = type.getBaseSpeed(); // Initial speed
+        this.position = new Vector2(400, 300);
         this.xp = 0;
         this.level = 1;
         this.invincibilityTimer = 0;
 
-        // Set initial frame
-        this.currentFrame = playerAtlas.findRegion("player_idle"); // TODO: Ensure this region exists
+        this.currentFrame = playerAtlas.findRegion(characterType.getIdleFrameName());
         if (this.currentFrame == null) {
-            Gdx.app.error("Player",
-                    "Player texture region 'player_idle' not found in atlas! Using first region as fallback.");
-            if (playerAtlas.getRegions().size > 0) {
-                this.currentFrame = playerAtlas.getRegions().first();
-            } else {
-                Gdx.app.error("Player", "Player atlas has no regions!");
-                // You might want to throw an exception or use a placeholder here
-            }
+            Gdx.app.error("Player", "Texture region '" + characterType.getIdleFrameName() + "' not found! Using fallback.");
+            if (playerAtlas.getRegions().size > 0) this.currentFrame = playerAtlas.getRegions().first();
+            else Gdx.app.error("Player", "Player atlas is empty!");
         }
     }
 
     public void update(float delta) {
-        // Update invincibility
         if (invincibilityTimer > 0) {
             invincibilityTimer -= delta;
-            if (invincibilityTimer < 0)
-                invincibilityTimer = 0;
+            if (invincibilityTimer < 0) invincibilityTimer = 0;
         }
+        if (currentWeapon != null) currentWeapon.update(delta);
 
-        // Update current weapon state
-        if (currentWeapon != null) {
-            currentWeapon.update(delta);
-        }
+        // Update speed based on effects
+        this.currentSpeed = getEffectiveSpeed();
 
-        // Update active ability effects
         for (int i = activeEffects.size - 1; i >= 0; i--) {
             ActiveAbilityEffect effect = activeEffects.get(i);
             if (effect.durationTimer > 0) {
                 effect.durationTimer -= delta;
                 if (effect.durationTimer <= 0) {
-                    Gdx.app.log("Player", "Ability effect " + effect.ability.name() + " expired.");
-                    deactivateAbilityEffect(effect.ability); // Method to revert changes
                     activeEffects.removeIndex(i);
+                    Gdx.app.log("Player", "Ability " + effect.ability.name() + " expired.");
                 }
             }
         }
     }
 
     public void move(Vector2 direction, float delta) {
-        if (direction.len() > 0) { // Normalize to prevent faster diagonal movement
-            position.add(direction.x * currentSpeed * delta, direction.y * currentSpeed * delta);
+        if (direction.len() > 0) {
+            position.mulAdd(direction.nor(), currentSpeed * delta); // Use currentSpeed
         }
-        // TODO: Add boundary checks to keep player within game area if necessary
     }
+    
+    public void setAimDirection(Vector2 direction) {
+        if (direction.len2() > 0) { // Check if direction is not zero vector
+            this.aimDirection.set(direction).nor();
+        }
+    }
+
+    public void shoot(Vector2 mouseTargetPos, boolean isAutoAiming, Vector2 autoAimTargetPos, Pool<Bullet> bulletPool, Array<Bullet> activeBullets, GameAssetManager assetManager) {
+        if (currentWeapon == null || !currentWeapon.canShoot()) {
+            // Auto-reload logic can be triggered here if (gameState.isAutoReloadEnabled() && currentWeapon.getCurrentAmmo() == 0)
+            return;
+        }
+
+        Vector2 shotDirection = new Vector2();
+        if (isAutoAiming && autoAimTargetPos != null) {
+            shotDirection.set(autoAimTargetPos).sub(position).nor();
+        } else {
+            shotDirection.set(mouseTargetPos).sub(position).nor();
+        }
+        
+        if (shotDirection.len2() == 0) shotDirection.set(aimDirection); // Fallback if target is on player
+
+        int bulletDamage = getEffectiveDamage(currentWeapon.getDamage());
+        TextureRegion bulletTexture = assetManager.getBulletTexture(currentWeapon.getName()); // Assumes method in AssetManager
+
+        for (int i = 0; i < currentWeapon.getProjectilesPerShot(); i++) {
+            Bullet bullet = bulletPool.obtain();
+            Vector2 projectileDir = new Vector2(shotDirection); // Copy base direction
+
+            if (currentWeapon.getProjectilesPerShot() > 1) { // Apply spread for multi-shot weapons
+                float baseSpreadAngle = 15f; // Max spread for shotgun (e.g., +/- 7.5 deg for 2 proj, +/- 15 for 3+)
+                float spreadAnglePerProjectile = (currentWeapon.getProjectilesPerShot() > 1) ? baseSpreadAngle / (currentWeapon.getProjectilesPerShot() -1) : 0;
+                float angleOffset = (i - (currentWeapon.getProjectilesPerShot() - 1) / 2.0f) * spreadAnglePerProjectile;
+                if(currentWeapon.getName().equalsIgnoreCase("Shotgun")) { // Shotgun specific spread
+                     angleOffset = (float)(Math.random() * 20.0 - 10.0); // Random spread +/-10 degrees for shotgun
+                }
+                projectileDir.rotateDeg(angleOffset);
+            }
+            // Calculate bullet start position slightly in front of player in shot direction
+            float bulletSpawnOffset = 20f; // How far in front of player bullets spawn
+            Vector2 bulletStartPosition = new Vector2(position).mulAdd(projectileDir, bulletSpawnOffset);
+
+            bullet.init(bulletStartPosition.x, bulletStartPosition.y, projectileDir, bulletDamage, bulletTexture, true, currentWeapon.getBulletSpeed());
+            activeBullets.add(bullet);
+        }
+        currentWeapon.shoot(); // Decrements ammo
+    }
+
 
     public void takeDamage(int damage) {
         if (invincibilityTimer <= 0) {
@@ -119,99 +141,46 @@ public class Player {
             if (currentHp <= 0) {
                 currentHp = 0;
                 Gdx.app.log("Player", "Player defeated!");
-                // Game over state will be set by GameController/GameState
             } else {
                 invincibilityTimer = INVINCIBILITY_DURATION;
-                Gdx.app.log("Player", "Player invincible for " + INVINCIBILITY_DURATION + "s.");
             }
-            // TODO: Trigger damage animation/sound
         }
     }
 
     public void gainXP(int amount) {
-        if (currentHp <= 0)
-            return; // No XP if dead
-
+        if (currentHp <= 0) return;
         xp += amount;
         Gdx.app.log("Player", "Gained " + amount + " XP. Total XP: " + xp + "/" + getXpNeededForNextLevel());
-        checkLevelUp();
     }
 
-    private void checkLevelUp() {
-        while (xp >= getXpNeededForNextLevel() && level < 100) { // Cap level for sanity
-            int xpForLevel = getXpNeededForNextLevel();
-            levelUp();
-            xp -= xpForLevel; // Carry over extra XP
-            Gdx.app.log("Player", "XP after level up: " + xp + "/" + getXpNeededForNextLevel());
-        }
+    public boolean canLevelUp() {
+        return xp >= getXpNeededForNextLevel();
     }
 
-    private void levelUp() {
+    public void levelUp() { // Call this AFTER ability is chosen
+        if (!canLevelUp()) return;
+        int xpNeeded = getXpNeededForNextLevel();
+        xp -= xpNeeded;
         level++;
-        Gdx.app.log("Player", "LEVEL UP! New level: " + level);
-        // GameState/GameController will handle presenting ability choices.
-        // Player might get some base stat increase or full heal on level up if desired.
-        // For now, just increasing level.
-        // TODO: Play level up animation/sound
+        Gdx.app.log("Player", "LEVEL UP! New level: " + level + ". XP: " + xp + "/" + getXpNeededForNextLevel());
+        // Potentially heal player or other benefits on level up
     }
 
-    /**
-     * Applies a chosen ability. This is called by GameController after player makes
-     * a choice.
-     * 
-     * @param ability The ability to activate.
-     */
     public void activateAbility(Ability ability) {
         Gdx.app.log("Player", "Activating ability: " + ability.name());
         activeEffects.add(new ActiveAbilityEffect(ability));
-
         switch (ability) {
-            case VITALITY:
-                this.maxHp += 1; // As per PDF
-                this.currentHp += 1; // Also heal by 1, or fully heal? PDF says "increase max HP"
-                Gdx.app.log("Player", "Max HP increased to " + maxHp);
-                break;
-            case DAMAGER:
-                // Effect applied via getEffectiveDamage()
-                Gdx.app.log("Player", "Damage boost active for 10s.");
-                break;
-            case PROCREASE:
-                if (currentWeapon != null) {
-                    currentWeapon.increaseProjectiles(1); // PDF: "Increase weapon projectile by 1 unit"
-                }
-                break;
-            case AMOCREASE:
-                if (currentWeapon != null) {
-                    currentWeapon.increaseMaxAmmo(5); // PDF: "Increase max weapon ammo by 5 units"
-                }
-                break;
-            case SPEEDY:
-                // Effect applied via getEffectiveSpeed()
-                Gdx.app.log("Player", "Speed boost active for 10s.");
-                break;
+            case VITALITY: this.maxHp += 1; this.currentHp += 1; break;
+            case PROCREASE: if (currentWeapon != null) currentWeapon.increaseProjectiles(1); break;
+            case AMOCREASE: if (currentWeapon != null) currentWeapon.increaseMaxAmmo(5); break;
+            default: break; // DAMAGER and SPEEDY are handled by getEffective...
         }
     }
 
-    /**
-     * Reverts changes made by an ability when its duration expires.
-     */
-    private void deactivateAbilityEffect(Ability ability) {
-        Gdx.app.log("Player", "Deactivating ability effect: " + ability.name());
-        // For DAMAGER and SPEEDY, their effects are checked dynamically in
-        // getEffectiveDamage/Speed.
-        // For permanent changes like VITALITY, PROCREASE, AMOCREASE, they are not
-        // "deactivated"
-        // unless you implement a system for temporary stat buffs that revert.
-        // The current implementation of VITALITY, PROCREASE, AMOCREASE are permanent
-        // buffs for the game session.
-    }
-
     public float getEffectiveSpeed() {
-        float speed = this.characterType.getBaseSpeed(); // Start with base speed
+        float speed = this.characterType.getBaseSpeed();
         for (ActiveAbilityEffect effect : activeEffects) {
-            if (effect.ability == Ability.SPEEDY && effect.durationTimer > 0) {
-                speed *= 2; // PDF: "Double player movement speed"
-            }
+            if (effect.ability == Ability.SPEEDY && effect.durationTimer > 0) speed *= 2;
         }
         return speed;
     }
@@ -219,149 +188,34 @@ public class Player {
     public int getEffectiveDamage(int baseDamage) {
         int damage = baseDamage;
         for (ActiveAbilityEffect effect : activeEffects) {
-            if (effect.ability == Ability.DAMAGER && effect.durationTimer > 0) {
-                damage *= 1.25f; // PDF: "Increase 25% weapon damage"
-            }
+            if (effect.ability == Ability.DAMAGER && effect.durationTimer > 0) damage *= 1.25f;
         }
         return damage;
     }
 
-    public void shoot(Vector2 targetPosition, Array<Bullet> gameBullets, GameAssetManager assetManager) {
-        if (currentWeapon == null || !currentWeapon.canShoot()) {
-            if (currentWeapon != null && currentWeapon.getCurrentAmmo() <= 0 && !currentWeapon.isReloading()) {
-                // Gdx.app.log("Player", "Out of ammo! Reloading automatically or waiting for
-                // manual reload.");
-                // Auto-reload logic could be here if GameState.isAutoReloadEnabled()
-            }
-            return;
-        }
-
-        // The weapon itself handles reducing ammo.
-        // The weapon's damage is now passed to bullet, potentially modified by player's
-        // DAMAGER ability.
-        int bulletDamage = getEffectiveDamage(currentWeapon.getDamage());
-
-        // Create bullets based on weapon's projectilesPerShot
-        for (int i = 0; i < currentWeapon.getProjectilesPerShot(); i++) {
-            // For multiple projectiles (like shotgun), you'd add spread logic here
-            Vector2 bulletVelocity = new Vector2(targetPosition).sub(position).nor();
-            float spreadAngle = 0;
-            if (currentWeapon.getProjectilesPerShot() > 1) {
-                // Example spread: -15 to +15 degrees for 3 projectiles, adjust as needed
-                float totalSpreadArc = 30; // degrees
-                spreadAngle = (i - (currentWeapon.getProjectilesPerShot() - 1) / 2.0f)
-                        * (totalSpreadArc / (Math.max(1, currentWeapon.getProjectilesPerShot() - 1)));
-                if (currentWeapon.getProjectilesPerShot() == 1)
-                    spreadAngle = 0; // No spread for single projectile
-            }
-            bulletVelocity.rotateDeg(spreadAngle);
-
-            // TODO: Get a proper bullet texture from assetManager
-            TextureRegion bulletTexture = assetManager.getPixthulhuSkin().getRegion("pixel"); // Placeholder
-            if (assetManager.getPixthulhuSkin().has("bullet", TextureRegion.class)) { // Attempt to get a more specific
-                                                                                      // texture
-                bulletTexture = assetManager.getPixthulhuSkin().getRegion("bullet");
-            }
-
-            Bullet newBullet = new Bullet(
-                    position.x, position.y, // Start from player center
-                    bulletVelocity, // Use the calculated velocity vector
-                    bulletDamage,
-                    bulletTexture,
-                    true // isPlayerBullet = true
-            );
-            gameBullets.add(newBullet);
-        }
-        currentWeapon.shoot(); // This will decrement ammo
-        // Gdx.app.log("Player", "Player shot. Weapon: " + currentWeapon.getName() + ",
-        // Ammo: " + currentWeapon.getCurrentAmmo());
-        // TODO: Play shoot sound effect
-    }
-
-    public void reloadWeapon() {
-        if (currentWeapon != null) {
-            currentWeapon.reload();
-        }
-    }
-
-    /**
-     * Resets player stats for a new game.
-     */
+    public void reloadWeapon() { if (currentWeapon != null) currentWeapon.reload(); }
     public void resetForNewGame() {
-        this.currentHp = this.maxHp; // Full HP based on character type (and VITALITY if applied)
-        this.currentSpeed = this.characterType.getBaseSpeed(); // Reset speed to base (SPEEDY will re-apply if active)
-        this.xp = 0;
-        this.level = 1;
-        this.invincibilityTimer = 0;
-        this.position.set(400, 300); // Reset position
-
-        if (currentWeapon != null) {
-            currentWeapon.resetAmmo(); // Full ammo for the weapon
-            // Reset projectilesPerShot if it was modified by PROCREASE, or re-apply
-            // PROCREASE
-            // For simplicity, PROCREASE and AMOCREASE effects from previous games are not
-            // carried over unless GameState is saved/loaded.
-            // If starting a truly "new" game, weapon should be in its base state.
-        }
-        this.activeEffects.clear(); // Clear any lingering ability effects
+        this.maxHp = characterType.getBaseHp(); // Reset to base, VITALITY will be re-applied if chosen
+        this.currentHp = this.maxHp;
+        this.currentSpeed = characterType.getBaseSpeed();
+        this.xp = 0; this.level = 1; this.invincibilityTimer = 0;
+        this.position.set(400, 300);
+        if (currentWeapon != null) currentWeapon.resetToInitialStats();
+        this.activeEffects.clear();
         Gdx.app.log("Player", "Player reset for new game.");
     }
 
-    // --- Getters ---
-    public Vector2 getPosition() {
-        return position;
-    }
-
-    public TextureRegion getCurrentFrame() {
-        return currentFrame;
-    }
-
-    public int getCurrentHp() {
-        return currentHp;
-    }
-
-    public int getMaxHp() {
-        return maxHp;
-    }
-
-    public int getXp() {
-        return xp;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public Weapon getCurrentWeapon() {
-        return currentWeapon;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public CharacterType getCharacterType() {
-        return characterType;
-    }
-
-    public boolean isInvincible() {
-        return invincibilityTimer > 0;
-    }
-
-    public int getXpNeededForNextLevel() {
-        // PDF: "برای رفتن از لول i به لول i+1 نیازمند exp 20*i جدید است"
-        // This means to go from level 1 to 2, you need 20*1 = 20 XP.
-        // To go from level 2 to 3, you need 20*2 = 40 XP *additional to what got you to
-        // level 2*.
-        return 20 * level;
-    }
-
-    // --- Setters (use with caution, prefer methods that encapsulate logic) ---
-    public void setPosition(float x, float y) {
-        this.position.set(x, y);
-    }
-
-    public void setCurrentHp(int hp) {
-        this.currentHp = Math.max(0, Math.min(hp, this.maxHp));
-    }
+    public Vector2 getPosition() { return position; }
+    public TextureRegion getCurrentFrame() { return currentFrame; }
+    public int getCurrentHp() { return currentHp; }
+    public int getMaxHp() { return maxHp; }
+    public int getXp() { return xp; }
+    public int getLevel() { return level; }
+    public Weapon getCurrentWeapon() { return currentWeapon; }
+    public User getUser() { return user; }
+    public CharacterType getCharacterType() { return characterType; }
+    public boolean isInvincible() { return invincibilityTimer > 0; }
+    public int getXpNeededForNextLevel() { return 20 * level; }
+    public void setCurrentHp(int hp) { this.currentHp = Math.max(0, Math.min(hp, this.maxHp)); }
+    public Vector2 getAimDirection() { return aimDirection; }
 }

@@ -13,12 +13,18 @@ public class Weapon {
     private int projectilesPerShot; // Number of bullets fired at once (e.g., 1 for Revolver, 4 for Shotgun)
     private int initialMaxAmmo; // To store the original max ammo for reset/AMOCREASE logic
     private int initialProjectilesPerShot; // To store original projectiles for reset/PROCREASE
+    private float bulletSpeed = 500f; // Add this field
+    // public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime, int
+    // projectilesPerShot, float bulletSpeed) { ... this.bulletSpeed = bulletSpeed;
+    // ...}
+    // public float getBulletSpeed() { return bulletSpeed; }
+    // Example: new Weapon("Revolver", 20, 6, 1.0f, 1, 600f);
 
-    public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime) {
-        this(name, baseDamage, maxAmmo, reloadTime, 1); // Default to 1 projectile per shot
+    public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime, float bulletSpeed) {
+        this(name, baseDamage, maxAmmo, reloadTime, 1, 500f); // Default to 1 projectile per shot
     }
 
-    public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime, int projectilesPerShot) {
+    public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime, int projectilesPerShot, float bulletSpeed) {
         this.name = name;
         this.baseDamage = baseDamage;
         this.maxAmmo = maxAmmo;
@@ -29,6 +35,7 @@ public class Weapon {
         this.isReloading = false;
         this.projectilesPerShot = projectilesPerShot;
         this.initialProjectilesPerShot = projectilesPerShot; // Store initial
+        this.bulletSpeed = bulletSpeed;
     }
 
     public void update(float delta) {

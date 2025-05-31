@@ -1,151 +1,453 @@
 package com.minutestilldawn.game.Controller;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.minutestilldawn.game.Model.CharacterType; // To create player
-import com.minutestilldawn.game.Model.GameAssetManager;
-import com.minutestilldawn.game.Model.GameState;
-import com.minutestilldawn.game.Model.Player;
-import com.minutestilldawn.game.Model.Weapon;
-import com.minutestilldawn.game.Model.Bullet; // To manage bullets
-import com.minutestilldawn.game.Model.Enemy; // To manage enemies
-import java.util.ArrayList;
-import java.util.List;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.TimeUtils;
+import com.minutestilldawn.game.Main;
+import com.minutestilldawn.game.Model.*;
 
-public class GameController extends InputAdapter { // Extends InputAdapter for input events
+public class GameController extends InputAdapter {
 
-    private GameAssetManager assetManager;
-    private GameState gameState; 
-    private Player player;
-    private List<Bullet> bullets; // List to hold active bullets
-    private List<Enemy> enemies; // List to hold active enemies
+    private final Main gameInstance;
+    private final GameState gameState;
+    private final GameAssetManager assetManager;
+    private final Player player;
+    private final OrthographicCamera gameCamera; // For converting screen to world coords
 
-    public GameController(GameAssetManager assetManager, GameState gameState) {
+    private final Array<Enemy> activeEnemies;
+    private final Pool<Enemy> enemyPool;
+
+    private final Array<Bullet> activePlayerBullets;
+    private final Pool<Bullet> playerBulletPool;
+    private final Array<Bullet> activeEnemyBullets;
+    private final Pool<Bullet> enemyBulletPool;
+
+    private final Array<Tree> trees; // Static obstacles
+
+    // Enemy Spawning Timers & Logic
+    private float tentacleSpawnTimer;
+    private static final float TENTACLE_SPAWN_INTERVAL_INITIAL = 3.0f; // PDF: every 3s if 2s passed
+    private float eyebatSpawnTimer;
+    private static final float EYEBAT_SPAWN_INTERVAL_INITIAL = 10.0f; // PDF: every 10s if 30s passed
+    private boolean elderBossSpawned = false;
+
+    private Vector2 mouseWorldPos = new Vector2(); // To store world coordinates of mouse
+
+    // Auto-aim
+    private Enemy autoAimTarget = null;
+
+    public GameController(Main gameInstance, GameState gameState, GameAssetManager assetManager,
+            OrthographicCamera gameCamera) {
+        this.gameInstance = gameInstance;
+        this.gameState = gameState;
         this.assetManager = assetManager;
-        // Initialize player with a default character type and loaded atlas
-        // Make sure "player_atlas" is loaded in your GameAssetManager
-        this.gameState = gameState; 
-        this.assetManager = assetManager; 
-        this.bullets = new ArrayList<>();
-        this.enemies = new ArrayList<>();
+        this.player = gameState.getPlayerInstance();
+        this.gameCamera = gameCamera;
 
-        // Add some dummy enemies for testing movement/shooting
-        enemies.add(new Enemy(100, 100, 25, 50, assetManager.getPixthulhuSkin().getRegion("player_idle"))); // Example texture
-        enemies.add(new Enemy(700, 500, 25, 50, assetManager.getPixthulhuSkin().getRegion("player_idle"))); // Example texture
+        activeEnemies = new Array<>();
+        enemyPool = new Pool<Enemy>() {
+            @Override
+            protected Enemy newObject() {
+                return new Enemy();
+            }
+        };
+
+        activePlayerBullets = new Array<>();
+        playerBulletPool = new Pool<Bullet>() {
+            @Override
+            protected Bullet newObject() {
+                return new Bullet();
+            }
+        };
+        activeEnemyBullets = new Array<>();
+        enemyBulletPool = new Pool<Bullet>() {
+            @Override
+            protected Bullet newObject() {
+                return new Bullet();
+            }
+        };
+
+        trees = new Array<>();
+        initializeLevel(); // Spawn initial trees
+    }
+
+    private void initializeLevel() {
+        // Spawn initial trees randomly (PDF: "در ابتدای شروع کردن بازی به صورت رندوم در
+        // جاهای مختلف قرار گیرند")
+        int numTrees = 10; // Example number
+        TextureRegion treeTexture = assetManager.getTreeTexture();
+        for (int i = 0; i < numTrees; i++) {
+            // Spawn within a certain area, avoiding player start position
+            float x = MathUtils.random(-500, 1300); // Example world bounds
+            float y = MathUtils.random(-300, 900);
+            // Ensure trees are not too close to player start (400,300)
+            if (Vector2.dst(x, y, player.getPosition().x, player.getPosition().y) > 100) {
+                trees.add(new Tree(x, y, treeTexture));
+            } else {
+                i--; // try again
+            }
+        }
+    }
+
+    public void update(float delta) {
+        if (gameState.getCurrentStatus() != GameStatus.PLAYING) {
+            return; // Don't update game logic if paused or game over
+        }
+
+        handleInput(delta); // Player movement and aiming
+        player.update(delta);
+
+        // Update mouse world position for aiming
+        Vector3 screenMousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        gameCamera.unproject(screenMousePos);
+        mouseWorldPos.set(screenMousePos.x, screenMousePos.y);
+        player.setAimDirection(new Vector2(mouseWorldPos).sub(player.getPosition()));
+
+        if (gameState.isAutoAimActive()) {
+            findAutoAimTarget();
+        } else {
+            autoAimTarget = null;
+        }
+
+        // Enemy Spawning
+        spawnEnemies(delta);
+
+        // Update Enemies
+        for (int i = activeEnemies.size - 1; i >= 0; i--) {
+            Enemy enemy = activeEnemies.get(i);
+            enemy.update(delta, player.getPosition(), enemyBulletPool, activeEnemyBullets, assetManager);
+            if (!enemy.isActive()) {
+                player.gainXP(getXpForEnemy(enemy.getType())); // Grant XP
+                // TODO: Spawn XP seed visual
+                activeEnemies.removeIndex(i);
+                enemyPool.free(enemy);
+                gameState.incrementKills();
+            }
+        }
+
+        // Update Player Bullets
+        for (int i = activePlayerBullets.size - 1; i >= 0; i--) {
+            Bullet bullet = activePlayerBullets.get(i);
+            bullet.update(delta);
+            if (!bullet.isActive() || isOutOfWorld(bullet.getPosition())) {
+                activePlayerBullets.removeIndex(i);
+                playerBulletPool.free(bullet);
+            }
+        }
+        // Update Enemy Bullets
+        for (int i = activeEnemyBullets.size - 1; i >= 0; i--) {
+            Bullet bullet = activeEnemyBullets.get(i);
+            bullet.update(delta);
+            if (!bullet.isActive() || isOutOfWorld(bullet.getPosition())) {
+                activeEnemyBullets.removeIndex(i);
+                enemyBulletPool.free(bullet);
+            }
+        }
+
+        handleCollisions();
+
+        // Check for level up
+        if (player.canLevelUp() && gameState.getCurrentStatus() == GameStatus.PLAYING) {
+            gameState.setCurrentStatus(GameStatus.LEVEL_UP_CHOICE);
+            // GameScreenView will detect this change and show the level up UI
+        }
+
+        // Check game over conditions
+        if (player.getCurrentHp() <= 0) {
+            gameState.setCurrentStatus(GameStatus.GAME_OVER_LOSE);
+            gameInstance.handleGameEnd(gameState);
+        } else if (gameState.getTimeRemainingSeconds() <= 0 && gameState.getCurrentStatus() == GameStatus.PLAYING) {
+            // GameState.update already sets status to GAME_OVER_WIN
+            gameInstance.handleGameEnd(gameState);
+        }
+    }
+
+    private void handleInput(float delta) {
+        Vector2 moveDirection = new Vector2();
+        if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP))
+            moveDirection.y += 1;
+        if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN))
+            moveDirection.y -= 1;
+        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT))
+            moveDirection.x -= 1;
+        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+            moveDirection.x += 1;
+
+        if (moveDirection.len2() > 0) { // If there's any movement input
+            player.move(moveDirection.nor(), delta); // nor() normalizes the vector
+        }
+
+        // Shooting is handled by touchDown/mouseClicked event for more precise timing
+        // but could also be polled for continuous fire if desired.
+    }
+
+    private void findAutoAimTarget() {
+        autoAimTarget = null;
+        float closestDistSq = Float.MAX_VALUE;
+        for (Enemy enemy : activeEnemies) {
+            if (enemy.isActive()) {
+                float distSq = player.getPosition().dst2(enemy.getPosition());
+                if (distSq < closestDistSq) {
+                    closestDistSq = distSq;
+                    autoAimTarget = enemy;
+                }
+            }
+        }
+    }
+
+    private void spawnEnemies(float delta) {
+        float elapsedTime = gameState.getElapsedTimeSeconds();
+        float spawnRateModifier = 1.0f - (elapsedTime / (gameState.getChosenGameDurationSeconds() * 2f)); // Faster over
+                                                                                                          // time
+        spawnRateModifier = Math.max(0.25f, spawnRateModifier); // Cap minimum spawn interval reduction
+
+        // Tentacle Monster Spawning (PDF: after 2s, every 3s)
+        if (elapsedTime >= 2.0f) {
+            tentacleSpawnTimer -= delta;
+            if (tentacleSpawnTimer <= 0) {
+                tentacleSpawnTimer = TENTACLE_SPAWN_INTERVAL_INITIAL * spawnRateModifier;
+                spawnEnemy(Enemy.EnemyType.TENTACLE_MONSTER);
+            }
+        }
+
+        // Eyebat Spawning (PDF: after 30s, every 10s)
+        // "اگر زمان کل بازی 1 ثانیه باشد پس از گذشت - ثانیه از زمان بازی شروع به اسپان
+        // میکند و اگر ثانیه از زمان بازی گذشته باشد 30 دشمن از این نوع هر ۱۰ ثانیه
+        // اسپان میشود"
+        // This is a bit confusing. Assuming "اگر 30 ثانیه از زمان بازی گذشته باشد"
+        // means after 30s of game time.
+        if (elapsedTime >= 30.0f) {
+            eyebatSpawnTimer -= delta;
+            if (eyebatSpawnTimer <= 0) {
+                eyebatSpawnTimer = EYEBAT_SPAWN_INTERVAL_INITIAL * spawnRateModifier;
+                spawnEnemy(Enemy.EnemyType.EYEBAT);
+            }
+        }
+
+        // Elder Boss Spawning (PDF: after half game duration)
+        if (!elderBossSpawned && elapsedTime >= gameState.getChosenGameDurationSeconds() / 2f) {
+            spawnEnemy(Enemy.EnemyType.ELDER_BOSS);
+            elderBossSpawned = true;
+            Gdx.app.log("GameController", "ELDER BOSS HAS SPAWNED!");
+            // TODO: Add logic for the shrinking arena if implementing boss fight fully
+        }
+    }
+
+    private void spawnEnemy(Enemy.EnemyType type) {
+        Enemy enemy = enemyPool.obtain();
+        // Spawn outside camera view
+        Vector2 spawnPos = getOffScreenSpawnPosition();
+        TextureRegion texture = assetManager.getEnemyTexture(type);
+        enemy.init(type, spawnPos.x, spawnPos.y, texture, assetManager);
+        activeEnemies.add(enemy);
+    }
+
+    private Vector2 getOffScreenSpawnPosition() {
+        float x = 0, y = 0;
+        float halfWidth = gameCamera.viewportWidth / 2 * 1.1f; // Slightly outside view
+        float halfHeight = gameCamera.viewportHeight / 2 * 1.1f;
+        float playerX = player.getPosition().x;
+        float playerY = player.getPosition().y;
+
+        int side = MathUtils.random(3); // 0: top, 1: bottom, 2: left, 3: right
+        if (side == 0) { // Top
+            x = MathUtils.random(playerX - halfWidth, playerX + halfWidth);
+            y = playerY + halfHeight;
+        } else if (side == 1) { // Bottom
+            x = MathUtils.random(playerX - halfWidth, playerX + halfWidth);
+            y = playerY - halfHeight;
+        } else if (side == 2) { // Left
+            x = playerX - halfWidth;
+            y = MathUtils.random(playerY - halfHeight, playerY + halfHeight);
+        } else { // Right
+            x = playerX + halfWidth;
+            y = MathUtils.random(playerY - halfHeight, playerY + halfHeight);
+        }
+        return new Vector2(x, y);
+    }
+
+    private void handleCollisions() {
+        // Player Bullets vs Enemies
+        for (int i = activePlayerBullets.size - 1; i >= 0; i--) {
+            Bullet bullet = activePlayerBullets.get(i);
+            if (!bullet.isActive())
+                continue;
+            for (int j = activeEnemies.size - 1; j >= 0; j--) {
+                Enemy enemy = activeEnemies.get(j);
+                if (!enemy.isActive())
+                    continue;
+                if (Intersector.overlaps(bullet.getBounds(), enemy.getBounds())) {
+                    enemy.takeDamage(bullet.getDamage());
+                    bullet.setActive(false); // Bullet is used up
+                    // TODO: Add hit effect
+                    break; // Bullet hits one enemy
+                }
+            }
+        }
+
+        // Enemy Bullets vs Player
+        for (int i = activeEnemyBullets.size - 1; i >= 0; i--) {
+            Bullet bullet = activeEnemyBullets.get(i);
+            if (!bullet.isActive())
+                continue;
+            if (Intersector.overlaps(bullet.getBounds(), player.getCharacterType().getHitbox(player.getPosition()))) {
+                player.takeDamage(bullet.getDamage());
+                bullet.setActive(false);
+                // TODO: Add player hit effect
+            }
+        }
+
+        // Player vs Enemies
+        if (!player.isInvincible()) {
+            for (Enemy enemy : activeEnemies) {
+                if (!enemy.isActive())
+                    continue;
+                if (Intersector.overlaps(player.getCharacterType().getHitbox(player.getPosition()),
+                        enemy.getBounds())) {
+                    player.takeDamage(10); // Example contact damage
+                    // TODO: Add collision effect, maybe small knockback
+                    break; // Player takes damage from one enemy at a time to prevent instant death
+                }
+            }
+        }
+
+        // Player vs Trees
+        if (!player.isInvincible()) {
+            for (Tree tree : trees) {
+                if (Intersector.overlaps(player.getCharacterType().getHitbox(player.getPosition()), tree.getBounds())) {
+                    player.takeDamage(Tree.DAMAGE_ON_CONTACT);
+                    // Player becomes invincible, so won't take damage again immediately
+                    break;
+                }
+            }
+        }
+    }
+
+    private boolean isOutOfWorld(Vector2 pos) {
+        // Define world boundaries based on camera and some margin
+        float margin = 200f;
+        float minX = gameCamera.position.x - gameCamera.viewportWidth / 2 - margin;
+        float maxX = gameCamera.position.x + gameCamera.viewportWidth / 2 + margin;
+        float minY = gameCamera.position.y - gameCamera.viewportHeight / 2 - margin;
+        float maxY = gameCamera.position.y + gameCamera.viewportHeight / 2 + margin;
+        return pos.x < minX || pos.x > maxX || pos.y < minY || pos.y > maxY;
+    }
+
+    private int getXpForEnemy(Enemy.EnemyType type) {
+        // PDF: "به ازای هر دانه ۳ XP" - assuming each enemy drops one "seed" equivalent
+        return 3;
     }
 
     /**
-     * Called every frame to update game logic.
-     * @param delta The time in seconds since the last frame.
+     * Called by GameScreenView when player makes an ability choice.
      */
-    public void update(float delta) {
-        // --- Handle Player Movement (Polling) --- [cite: 60]
-        Vector2 movementDirection = new Vector2();
-        if (Gdx.input.isKeyPressed(Keys.W)) {
-            movementDirection.y += 1;
-        }
-        if (Gdx.input.isKeyPressed(Keys.S)) {
-            movementDirection.y -= 1;
-        }
-        if (Gdx.input.isKeyPressed(Keys.A)) {
-            movementDirection.x -= 1;
-        }
-        if (Gdx.input.isKeyPressed(Keys.D)) {
-            movementDirection.x += 1;
-        }
-
-        // Normalize movement to prevent faster diagonal movement [cite: 60]
-        if (movementDirection.len() > 0) {
-            player.move(movementDirection.nor(), delta);
-        }
-
-        // --- Update Player ---
-        player.update(delta);
-
-        // --- Update Bullets ---
-        // Iterate backwards to safely remove bullets
-        for (int i = bullets.size() - 1; i >= 0; i--) {
-            Bullet bullet = bullets.get(i);
-            bullet.update(delta);
-            // Basic boundary check (remove if out of screen)
-            if (bullet.getPosition().x < 0 || bullet.getPosition().x > Gdx.graphics.getWidth() ||
-                bullet.getPosition().y < 0 || bullet.getPosition().y > Gdx.graphics.getHeight()) {
-                bullets.remove(i);
-            }
-            // Add collision detection with enemies here later
-        }
-
-        // --- Update Enemies --- [cite: 65]
-        for (int i = enemies.size() - 1; i >= 0; i--) {
-            Enemy enemy = enemies.get(i);
-            enemy.update(delta, player.getPosition()); // Enemies move towards player
-            // Basic collision with player (for damage) [cite: 79]
-            // (You'll need more accurate collision detection for actual game)
-            if (player.getPosition().dst(enemy.getPosition()) < 30) { // Simple distance check
-                player.takeDamage(1); // Example damage
-                // Handle enemy death if HP drops to 0 after collision (e.g. from player's touch)
-            }
-        }
-        // Add enemy spawning logic here [cite: 64, 67]
-        // Add bullet-enemy collision detection here [cite: 66]
-
-        // --- Game State Checks ---
-        // Check for game over (player HP <= 0) [cite: 87]
-        // Check for game win (time runs out) [cite: 87]
+    public void processAbilityChoice(Ability ability) {
+        player.activateAbility(ability);
+        player.levelUp(); // Finalize level up after ability is chosen
+        gameState.setCurrentStatus(GameStatus.PLAYING);
     }
 
-    // --- Event-Driven Input Handling ---
+    // --- InputAdapter Overrides ---
     @Override
     public boolean keyDown(int keycode) {
-        // Reload weapon on R key [cite: 63]
-        if (keycode == Keys.R) {
-            player.reload();
+        if (gameState.getCurrentStatus() != GameStatus.PLAYING)
+            return false;
+
+        if (keycode == Input.Keys.R) {
+            player.reloadWeapon();
             return true;
         }
-        // Auto-aim toggle on Space (optional) [cite: 62]
-        if (keycode == Keys.SPACE) {
-            // Toggle auto-aim feature
-            Gdx.app.log("GameController", "Auto-aim toggle (not implemented yet)");
+        if (keycode == Input.Keys.SPACE) { // Toggle Auto-Aim
+            gameState.toggleAutoAim();
+            Gdx.app.log("GameController", "Auto-Aim: " + (gameState.isAutoAimActive() ? "ON" : "OFF"));
             return true;
         }
+        // For cheat codes (PDF Section 3)
+        if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT)) {
+            if (keycode == Input.Keys.NUM_1) { // Reduce time by 1 minute
+                gameState.cheatReduceTime(60);
+                Gdx.app.log("CHEAT", "Time reduced by 1 minute.");
+                return true;
+            }
+            if (keycode == Input.Keys.NUM_2) { // Increase player level
+                player.gainXP(player.getXpNeededForNextLevel() - player.getXp() + 1); // Give enough XP to level up
+                // Level up choice will be triggered on next update if status is PLAYING
+                Gdx.app.log("CHEAT", "XP added to trigger level up.");
+                return true;
+            }
+            if (keycode == Input.Keys.NUM_3) { // Heal player if HP not full
+                if (player.getCurrentHp() < player.getMaxHp()) {
+                    player.setCurrentHp(player.getMaxHp());
+                    Gdx.app.log("CHEAT", "Player healed.");
+                } else {
+                    Gdx.app.log("CHEAT", "Player already at full HP.");
+                }
+                return true;
+            }
+            if (keycode == Input.Keys.NUM_4) { // Go to boss fight (spawn boss)
+                if (!elderBossSpawned) {
+                    spawnEnemy(Enemy.EnemyType.ELDER_BOSS);
+                    elderBossSpawned = true;
+                    Gdx.app.log("CHEAT", "Elder Boss spawned.");
+                } else {
+                    Gdx.app.log("CHEAT", "Elder Boss already spawned or conditions not met.");
+                }
+                return true;
+            }
+            if (keycode == Input.Keys.NUM_5) { // Custom Cheat: Grant 50 XP
+                player.gainXP(50);
+                Gdx.app.log("CHEAT", "Granted 50 XP.");
+                return true;
+            }
+        }
+
         return false;
     }
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        // Shoot with left mouse click [cite: 61]
-        if (button == Buttons.LEFT) {
-            player.shoot(screenX, screenY); // Player attempts to shoot
-            // If player shoots, create a bullet instance and add to bullets list
-            if (player.getCurrentWeapon().canShoot() && !player.getCurrentWeapon().isReloading()) {
-                 // Example: create bullet from player position towards mouse
-                 Bullet newBullet = new Bullet(
-                     player.getPosition().x,
-                     player.getPosition().y,
-                     screenX, screenY,
-                     player.getCurrentWeapon().getDamage(),
-                     assetManager.getPixthulhuSkin().getRegion("pixel") // Placeholder bullet texture
-                 );
-                 bullets.add(newBullet);
-            }
+        if (gameState.getCurrentStatus() != GameStatus.PLAYING)
+            return false;
+
+        if (button == Input.Buttons.LEFT) {
+            Vector2 targetPos = gameState.isAutoAimActive() && autoAimTarget != null ? autoAimTarget.getPosition()
+                    : mouseWorldPos;
+            player.shoot(mouseWorldPos, gameState.isAutoAimActive(),
+                    autoAimTarget != null ? autoAimTarget.getPosition() : null, playerBulletPool, activePlayerBullets,
+                    assetManager);
             return true;
         }
         return false;
     }
 
-    // --- Getters for views to draw ---
-    public Player getPlayer() {
-        return player;
+    // Getters for GameScreenView to render entities
+    public Array<Enemy> getActiveEnemies() {
+        return activeEnemies;
     }
 
-    public List<Bullet> getBullets() {
-        return bullets;
+    public Array<Bullet> getActivePlayerBullets() {
+        return activePlayerBullets;
     }
 
-    public List<Enemy> getEnemies() {
-        return enemies;
+    public Array<Bullet> getActiveEnemyBullets() {
+        return activeEnemyBullets;
     }
+
+    public Array<Tree> getTrees() {
+        return trees;
+    }
+
+    public Enemy getAutoAimTarget() {
+        return autoAimTarget;
+    }
+
 }

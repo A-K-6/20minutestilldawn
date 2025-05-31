@@ -1,5 +1,8 @@
 package com.minutestilldawn.game.Model;
 
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+
 public enum CharacterType {
     SHANA(4, 4), // Speed 4, HP 4
     DIAMOND(7, 1), // Speed 7, HP 1
@@ -9,6 +12,13 @@ public enum CharacterType {
 
     private final float baseSpeed;
     private final int baseHp;
+
+    private float hitboxWidth = 28f, hitboxHeight = 40f; // Example dimensions
+
+    public Rectangle getHitbox(Vector2 centerPos) {
+        return new Rectangle(centerPos.x - hitboxWidth / 2, centerPos.y -
+                hitboxHeight / 2, hitboxWidth, hitboxHeight);
+    }
 
     CharacterType(float baseSpeed, int baseHp) {
         this.baseSpeed = baseSpeed;

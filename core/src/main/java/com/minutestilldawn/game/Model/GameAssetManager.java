@@ -3,7 +3,9 @@ package com.minutestilldawn.game.Model;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.minutestilldawn.game.Model.Enemy.EnemyType;
 import com.badlogic.gdx.audio.Sound;
 
 public class GameAssetManager extends AssetManager {
@@ -16,6 +18,9 @@ public class GameAssetManager extends AssetManager {
     // For Flat Earth UI (modern minimalist):
     // public static final String FLAT_EARTH_SKIN = "flatearth/flatearth-ui.json";
     // VisUI is loaded differently, see Main.java
+    // public TextureRegion getBulletTexture(String weaponName) { /* logic to return specific bullet texture or default */ return getPixthulhuSkin().getRegion("bullet_default"); }
+    // Ensure "bullet_default" or weapon-specific bullet regions exist in your skin/atlas.
+
 
     // --- Game Assets (placeholders) ---
     public static final String PLAYER_SPRITE_ATLAS = "sprites/player_atlas.atlas";
@@ -54,6 +59,21 @@ public class GameAssetManager extends AssetManager {
     // Example getter for a game asset
     public TextureAtlas getPlayerSpriteAtlas() {
         return get(PLAYER_SPRITE_ATLAS, TextureAtlas.class);
+    }
+
+    public TextureRegion getEnemyBulletTexture(EnemyType type) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getEnemyBulletTexture'");
+    }
+
+    public TextureRegion getTreeTexture() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getTreeTexture'");
+    }
+
+    public TextureRegion getEnemyTexture(EnemyType type) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getEnemyTexture'");
     }
 
     // Add more specific getters for other assets as needed
