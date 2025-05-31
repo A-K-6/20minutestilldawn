@@ -120,12 +120,6 @@ public class PreGameMenuView extends BaseMenuView {
             }
         });
 
-        durationSelectBox.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                controller.durationSelected(durationSelectBox.getSelected());
-            }
-        });
 
         startGameButton.addListener(event -> {
             if (startGameButton.isPressed()) {
