@@ -75,11 +75,25 @@ public class PreGameMenuView extends BaseMenuView {
         // --- Duration Selection ---
         table.add(new Label("Game Duration:", skin)).right();
         durationSelectBox = new SelectBox<>(skin);
-        durationSelectBox.setItems(controller.getAvailableDurations());
-        durationSelectBox.setSelected(controller.getSelectedDurationMinutes()); // Set initial
-        // Custom string representation for Float in SelectBox
-        durationSelectBox.getList().setToStringFunction(duration -> (int)duration.floatValue() + " min");
-        table.add(durationSelectBox).width(250).row();
+        // Prepare durations as Strings for display
+        Float[] durations = controller.getAvailableDurations();
+        String[] durationStrings = new String[durations.length];
+        for (int i = 0; i < durations.length; i++) {
+            durationStrings[i] = ((int)durations[i].floatValue()) + " min";
+        }
+        SelectBox<String> durationSelectBoxStr = new SelectBox<>(skin);
+        durationSelectBoxStr.setItems(durationStrings);
+        // Set initial selection
+        int selectedIndex = 0;
+        for (int i = 0; i < durations.length; i++) {
+            if (durations[i].equals(controller.getSelectedDurationMinutes())) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        durationSelectBoxStr.setSelected(durationStrings[selectedIndex]);
+        this.durationSelectBox = null; // Not used anymore, but keep field for compatibility if needed
+        table.add(durationSelectBoxStr).width(250).row();
 
 
         // --- Start Game Button ---
@@ -91,10 +105,11 @@ public class PreGameMenuView extends BaseMenuView {
         table.add(backButton).colspan(2).width(250).height(50).padTop(10).row();
 
         // --- Add Listeners ---
-        characterSelectBox.addListener(new ChangeListener() {
+        durationSelectBoxStr.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                controller.characterSelected(characterSelectBox.getSelected());
+                int selectedIdx = durationSelectBoxStr.getSelectedIndex();
+                controller.durationSelected(durations[selectedIdx]);
             }
         });
 

@@ -13,9 +13,9 @@ public class LoginMenuController extends BaseMenuController {
     private LoginMenuView view;
     private UserDao userDao; // Use the interface
 
-    public LoginMenuController(Main gameInstance) {
+    public LoginMenuController(Main gameInstance, UserDao userDao) {
         this.gameInstance = gameInstance;
-        this.userDao = new SqliteUserDao(); // Initialize your DAO implementation
+        this.userDao = userDao; 
         this.userDao.initialize(); // Ensure DB table is set up
     }
 
@@ -75,30 +75,16 @@ public void onForgotPasswordClicked(String username) {
         return;
     }
 
-    int securityQuestionId = userDao.getSecurityQuestion(username);
-    if (securityQuestionId < 0) { // Index not found
+    String securityQuestionPhrase = userDao.getSecurityQuestionPhrase(username);
+    if (securityQuestionPhrase.isEmpty() || securityQuestionPhrase == null) { // Index not found
         if (view != null)
             view.setValidationMessage("Username not found.", Color.RED);
         return;
     }
     
-    // Define the security questions in a shared location. You could also make these public static in RegistrationMenuController.
-    String[] securityQuestions = {
-        "What is your best friend's name?",
-        "What was your first pet's name?",
-        "What city were you born in?",
-        "What is your favorite book?",
-        "What is your favorite color?"
-    };
-    
-    // Get the corresponding security question phrase.
-    String securityQuestionPhrase = (securityQuestionId >= 0 && securityQuestionId < securityQuestions.length)
-            ? securityQuestions[securityQuestionId] : "Unknown security question";
-    
     // Now prompt the user for an answer and new password (for example, using a dialog).
     Gdx.app.log("LoginController", "Security question for " + username + ": " + securityQuestionPhrase);
     if (view != null)
         view.setValidationMessage("Security question: " + securityQuestionPhrase, Color.BLUE);
-    
     }
 }

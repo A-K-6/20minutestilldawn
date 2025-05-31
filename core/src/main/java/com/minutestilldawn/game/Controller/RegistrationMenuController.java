@@ -25,9 +25,9 @@ public class RegistrationMenuController extends BaseMenuController {
 
     private int selectedAvatarId = 0; // Default or no avatar selected
 
-    public RegistrationMenuController(Main gameInstance) {
+    public RegistrationMenuController(Main gameInstance, UserDao userDao) {
         this.gameInstance = gameInstance;
-        this.userDao = new SqliteUserDao(); // Initialize your DAO implementation
+        this.userDao = userDao;
         this.userDao.initialize(); // Ensure DB table is set up
     }
 

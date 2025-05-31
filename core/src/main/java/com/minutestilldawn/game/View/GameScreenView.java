@@ -28,7 +28,7 @@ public class GameScreenView implements Screen {
     // Optional: for in-game HUD or pause menu (using Scene2D.UI)
     private Stage uiStage; // For drawing UI elements like HP bar, level, etc. [cite: 98]
 
-    public GameScreenView(GameAssetManager assetManager) {
+    public GameScreenView(GameAssetManager assetManager,  GameState currentGameState, Main main) {
         this.assetManager = assetManager;
         this.batch = Main.getBatch(); // Use the shared batch from Main
 
