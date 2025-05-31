@@ -26,12 +26,25 @@ public class GameAssetManager extends AssetManager {
     public static final String PLAYER_SPRITE_ATLAS = "sprites/player_atlas.atlas";
     public static final String MENU_BACKGROUND_TEXTURE = "gameAssets/backgrounds/menuBg.png";
     public static final String LOGIN_REGISTER_MENU_BACKGROUND = "gameAssets/backgrounds/LoginBg.png";
+    public static final String Default_Avatar = "avatars/default_avatar.png";
+    public static final String Avatar1 = "avatars/avatar1.png";
+    public static final String Avatar2 = "avatars/avatar2.png";
+    public static final String Avatar3 = "avatars/avatar3.png";
+    public static final String Avatar4 = "avatars/avatar4.png";
+    public static final String Avatar5 = "avatars/avatar5.png";
     public static final String SHOOT_SOUND = "audio/Arrow Fly 3_3.wav";
 
 
     public void loadAssets() {
         // Load the chosen UI Skin
         load(PIXTHULHU_SKIN, Skin.class); // Or TERRA_UI_SKIN, FLAT_EARTH_SKIN
+        load(Default_Avatar, Texture.class); // Load a default
+        load(Avatar1, Texture.class); // Load a default
+        load(Avatar2, Texture.class); // Load a default
+        load(Avatar3, Texture.class); // Load a default
+        load(Avatar4, Texture.class); // Load a default
+        load(Avatar5, Texture.class); // Load a default
+
 
         // Load your game-specific assets
         // load(PLAYER_SPRITE_ATLAS, TextureAtlas.class);
