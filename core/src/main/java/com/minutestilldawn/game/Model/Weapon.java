@@ -22,10 +22,11 @@ public class Weapon {
 
     public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime) {
         this(name, baseDamage, maxAmmo, reloadTime, 1, 500f); // Default to 1 projectile per shot
-        // TODO: BULLET SPEED NEED TO BE DONE : ) 
+        // TODO: BULLET SPEED NEED TO BE DONE : )
     }
 
-    public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime, int projectilesPerShot, float bulletSpeed) {
+    public Weapon(String name, int baseDamage, int maxAmmo, float reloadTime, int projectilesPerShot,
+            float bulletSpeed) {
         this.name = name;
         this.baseDamage = baseDamage;
         this.maxAmmo = maxAmmo;
@@ -132,6 +133,14 @@ public class Weapon {
         if (!isReloading)
             return 0f;
         return Math.max(0f, 1f - (reloadTimer / reloadTime));
+    }
+
+    public float getBulletSpeed() {
+        return bulletSpeed;
+    }
+
+    public void setBulletSpeed(float bulletSpeed) {
+        this.bulletSpeed = bulletSpeed;
     }
 
     // --- Modifiers for Abilities ---

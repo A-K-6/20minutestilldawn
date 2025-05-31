@@ -76,5 +76,10 @@ public class GameAssetManager extends AssetManager {
         throw new UnsupportedOperationException("Unimplemented method 'getEnemyTexture'");
     }
 
+    public TextureRegion getBulletTexture(String name) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getBulletTexture'");
+    }
+
     // Add more specific getters for other assets as needed
 }

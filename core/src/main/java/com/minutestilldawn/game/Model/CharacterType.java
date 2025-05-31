@@ -32,4 +32,9 @@ public enum CharacterType {
     public int getBaseHp() {
         return baseHp;
     }
+
+    String getIdleFrameName() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getIdleFrameName'");
+    }
 }
