@@ -1,7 +1,12 @@
 package com.minutestilldawn.game.Model;
 
+import java.util.List;
+
 public class GameAPI {
     private static GameAPI instance;
+    private static GameState gameState; 
+    private static User currentUser; 
+    private static List<User> users; 
 
     private GameAPI() {
     }
@@ -12,11 +17,8 @@ public class GameAPI {
         }
         return instance;
     }
-    public void startNewGame(User user) {
-        GameState.getInstance().setCurrentUser(user);
-        GameState.getInstance().setCurrentLevel(1);
-        GameState.getInstance().setScore(0);
-        // additional initialization here
+    public void startNewGame(GameState gameState) {
+
     }
     
 }
