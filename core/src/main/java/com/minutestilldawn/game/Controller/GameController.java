@@ -28,7 +28,7 @@ public class GameController extends InputAdapter { // Extends InputAdapter for i
         // Make sure "player_atlas" is loaded in your GameAssetManager
         this.gameState = gameState; 
         this.assetManager = assetManager; 
-        this.player = new Player(gameState.getPlayer(),CharacterType.SHANA, assetManager.getPlayerSpriteAtlas());
+        this.player = new Player(gameState.getLoggedInUser(),CharacterType.SHANA, assetManager.getPlayerSpriteAtlas());
         this.bullets = new ArrayList<>();
         this.enemies = new ArrayList<>();
 
