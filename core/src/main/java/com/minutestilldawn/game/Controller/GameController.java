@@ -9,6 +9,7 @@ import com.minutestilldawn.game.Model.CharacterType; // To create player
 import com.minutestilldawn.game.Model.GameAssetManager;
 import com.minutestilldawn.game.Model.GameState;
 import com.minutestilldawn.game.Model.Player;
+import com.minutestilldawn.game.Model.Weapon;
 import com.minutestilldawn.game.Model.Bullet; // To manage bullets
 import com.minutestilldawn.game.Model.Enemy; // To manage enemies
 import java.util.ArrayList;
@@ -28,7 +29,6 @@ public class GameController extends InputAdapter { // Extends InputAdapter for i
         // Make sure "player_atlas" is loaded in your GameAssetManager
         this.gameState = gameState; 
         this.assetManager = assetManager; 
-        this.player = new Player(gameState.getLoggedInUser(),CharacterType.SHANA, assetManager.getPlayerSpriteAtlas());
         this.bullets = new ArrayList<>();
         this.enemies = new ArrayList<>();
 
