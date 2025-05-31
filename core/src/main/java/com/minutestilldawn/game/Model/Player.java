@@ -24,7 +24,7 @@ public class Player {
     private float invincibilityTimer;
     private static final float INVINCIBILITY_DURATION = 1.0f; // 1 second invincibility [cite: 80]
 
-    public Player(User user, CharacterType type, TextureAtlas atlas) {
+    public Player(User user, CharacterType type, TextureAtlas atlas, Weapon currentWeapon) {
         this.user = user; 
         this.characterType = type;
         this.playerAtlas = atlas;
@@ -34,7 +34,9 @@ public class Player {
         this.currentHp = maxHp;
         this.xp = 0;
         this.level = 1;
-        this.currentWeapon = new Weapon("Revolver", 20, 6, 1.0f); // Default weapon [cite: 85]
+        this.currentWeapon = currentWeapon; 
+        // new Weapon("Revolver", 20, 6, 1.0f); 
+        // Default weapon [cite: 85]
 
         this.invincibilityTimer = 0;
 
