@@ -1,0 +1,15 @@
+BrainMonster.png
+size:128,64
+repeat:none
+BrainMonster
+index:0
+bounds:2,2,25,41
+BrainMonster
+index:1
+bounds:29,7,27,36
+BrainMonster
+index:2
+bounds:58,11,28,32
+BrainMonster
+index:3
+bounds:88,14,29,29

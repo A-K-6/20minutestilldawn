@@ -69,7 +69,7 @@ public class GameState {
         // based on the name and potentially stats from GameAssetManager or a config
         // file.
         Weapon initialWeapon = createWeaponFromName(weaponName, gameAssetManager); // Helper method
-        this.playerInstance = new Player(loggedInUser, characterType, playerAtlas, initialWeapon);
+        this.playerInstance = new Player(loggedInUser, characterType, gameAssetManager, initialWeapon);
 
         this.elapsedTimeSeconds = 0;
         this.kills = 0;

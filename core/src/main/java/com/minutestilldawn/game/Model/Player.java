@@ -1,11 +1,14 @@
 package com.minutestilldawn.game.Model;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.audio.Sound; // Import Sound
 
 public class Player {
     private User user;
@@ -17,10 +20,15 @@ public class Player {
     private int xp;
     private int level;
     private Weapon currentWeapon;
-    private TextureAtlas playerAtlas;
+    private GameAssetManager assetManager; // Changed from TextureAtlas
     private TextureRegion currentFrame;
     private float invincibilityTimer;
     private static final float INVINCIBILITY_DURATION = 1.0f;
+
+    // Animation fields
+    private Animation<TextureRegion> idleAnimation;
+    private Animation<TextureRegion> runAnimation;
+    private float stateTime; // Tracks time for animation playback
 
     private static class ActiveAbilityEffect {
         Ability ability;
@@ -29,36 +37,47 @@ public class Player {
             this.ability = ability;
             switch (ability) {
                 case DAMAGER: case SPEEDY: this.durationTimer = 10.0f; break;
-                default: this.durationTimer = -1; break;
+                default: this.durationTimer = -1; break; // For abilities without a timed duration
             }
         }
     }
     private Array<ActiveAbilityEffect> activeEffects;
     private Vector2 aimDirection = new Vector2(1, 0); // Default aim right for auto-aim
 
-    public Player(User user, CharacterType type, TextureAtlas atlas, Weapon startingWeapon) {
+    public Player(User user, CharacterType type, GameAssetManager assetManager, Weapon startingWeapon) {
         this.user = user;
         this.characterType = type;
-        this.playerAtlas = atlas;
+        this.assetManager = assetManager; // Store asset manager
         this.currentWeapon = startingWeapon;
         this.activeEffects = new Array<>();
         this.maxHp = type.getBaseHp();
         this.currentHp = this.maxHp;
         this.currentSpeed = type.getBaseSpeed(); // Initial speed
-        this.position = new Vector2(400, 300);
+        this.position = new Vector2(400, 300); // Initial player position
         this.xp = 0;
         this.level = 1;
         this.invincibilityTimer = 0;
+        this.stateTime = 0f; // Initialize state time for animations
 
-        this.currentFrame = playerAtlas.findRegion(characterType.getIdleFrameName());
-        if (this.currentFrame == null) {
-            Gdx.app.error("Player", "Texture region '" + characterType.getIdleFrameName() + "' not found! Using fallback.");
-            if (playerAtlas.getRegions().size > 0) this.currentFrame = playerAtlas.getRegions().first();
-            else Gdx.app.error("Player", "Player atlas is empty!");
+        // Load idle animation frames
+        Array<TextureRegion> idleFrames = new Array<>();
+        // Assuming idle.png is a single frame, add it once.
+        idleFrames.add(assetManager.getCharacterTexture(type, "idle", 0));
+        this.idleAnimation = new Animation<>(0.25f, idleFrames); // Static idle animation, duration doesn't matter much for single frame
+
+        // Load run animation frames
+        Array<TextureRegion> runFrames = new Array<>();
+        for (String path : type.getRunTexturePaths()) {
+            runFrames.add(new TextureRegion(assetManager.get(path, Texture.class))); // Get Texture directly, then convert to TextureRegion
         }
+        this.runAnimation = new Animation<>(0.1f, runFrames, Animation.PlayMode.LOOP); // Adjust frame duration as needed
+
+        this.currentFrame = idleAnimation.getKeyFrame(stateTime); // Initial frame is idle
     }
 
     public void update(float delta) {
+        stateTime += delta; // Accumulate state time for animations
+
         if (invincibilityTimer > 0) {
             invincibilityTimer -= delta;
             if (invincibilityTimer < 0) invincibilityTimer = 0;
@@ -68,6 +87,20 @@ public class Player {
         // Update speed based on effects
         this.currentSpeed = getEffectiveSpeed();
 
+        // Determine current animation frame based on movement input
+        // This is a simplified check. A more robust solution would track actual velocity.
+        boolean isMoving = Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.A) ||
+                           Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.D) ||
+                           Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.LEFT) ||
+                           Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.RIGHT);
+
+        if (isMoving) {
+            currentFrame = runAnimation.getKeyFrame(stateTime);
+        } else {
+            currentFrame = idleAnimation.getKeyFrame(stateTime);
+        }
+
+        // Update active ability effects
         for (int i = activeEffects.size - 1; i >= 0; i--) {
             ActiveAbilityEffect effect = activeEffects.get(i);
             if (effect.durationTimer > 0) {
@@ -94,7 +127,6 @@ public class Player {
 
     public void shoot(Vector2 mouseTargetPos, boolean isAutoAiming, Vector2 autoAimTargetPos, Pool<Bullet> bulletPool, Array<Bullet> activeBullets, GameAssetManager assetManager) {
         if (currentWeapon == null || !currentWeapon.canShoot()) {
-            // Auto-reload logic can be triggered here if (gameState.isAutoReloadEnabled() && currentWeapon.getCurrentAmmo() == 0)
             return;
         }
 
@@ -131,6 +163,12 @@ public class Player {
             activeBullets.add(bullet);
         }
         currentWeapon.shoot(); // Decrements ammo
+
+        // Play shoot sound
+        Sound shootSound = assetManager.getShootSound();
+        if (shootSound != null) {
+            shootSound.play();
+        }
     }
 
 
@@ -202,6 +240,8 @@ public class Player {
         this.position.set(400, 300);
         if (currentWeapon != null) currentWeapon.resetToInitialStats();
         this.activeEffects.clear();
+        this.stateTime = 0f; // Reset animation time
+        this.currentFrame = idleAnimation.getKeyFrame(stateTime); // Reset to idle frame
         Gdx.app.log("Player", "Player reset for new game.");
     }
 
