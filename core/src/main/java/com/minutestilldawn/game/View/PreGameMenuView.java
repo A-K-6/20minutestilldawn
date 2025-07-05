@@ -97,7 +97,7 @@ public class PreGameMenuView extends BaseMenuView {
 
 
         // --- Start Game Button ---
-        TextButton startGameButton = new TextButton("Start Game", skin);
+        TextButton startGameButton = new TextButton("Play", skin);
         table.add(startGameButton).colspan(2).width(250).height(60).padTop(30).row();
 
         // --- Back Button ---
@@ -128,11 +128,11 @@ public class PreGameMenuView extends BaseMenuView {
             return false;
         });
 
-        backButton.addListener(event -> {
-            if (backButton.isPressed()) {
+        backButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
                 controller.onButtonClicked("back_to_main_menu");
             }
-            return false;
         });
     }
 

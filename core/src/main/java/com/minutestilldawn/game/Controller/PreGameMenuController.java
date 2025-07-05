@@ -14,7 +14,7 @@ public class PreGameMenuController extends BaseMenuController {
     // Default selections
     private CharacterType selectedCharacter = CharacterType.SHANA;
     private String selectedWeapon = "Revolver"; // Must match names in GameState.createWeaponFromName
-    private float selectedDurationMinutes = 20f; // Default to 20 minutes
+    private float selectedDurationMinutes = 2f; // Default to 2 minutes
 
     public PreGameMenuController(Main gameInstance) {
         this.gameInstance = gameInstance;

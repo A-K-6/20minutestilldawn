@@ -3,7 +3,6 @@ package com.minutestilldawn.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -33,7 +32,8 @@ public class Main extends Game {
     private RegistrationMenuController registrationMenuController;
     private PreGameMenuController preGameMenuController; // New
     private HintMenuController hintMenuController; // New (if you create one)
-    // GameController is typically instantiated by GameScreenView with a GameState
+    private GameMenuController gameMenuController;
+    // GameController is typically instantiated by GameMenuView with a GameState
 
     // Current User State
     private static boolean isMusicDisabled = false;
@@ -59,6 +59,7 @@ public class Main extends Game {
     public static boolean isGameSFXDisabled() {
         return isGameSFXDisabled;
     }
+
 
     public static void setGameSFXDisabled(boolean isGameSFXDisabled) {
         Main.isGameSFXDisabled = isGameSFXDisabled;
@@ -94,7 +95,7 @@ public class Main extends Game {
         registrationMenuController = new RegistrationMenuController(this, userDao); // Pass DAO
         preGameMenuController = new PreGameMenuController(this);
         hintMenuController = new HintMenuController(this); // Assuming you have this controller
-
+        gameMenuController = new GameMenuController(this);
         // Start with Login Screen
         setScreen(new LoginMenuView(loginMenuController, uiSkin));
     }
@@ -191,7 +192,7 @@ public class Main extends Game {
                 autoReload);
         currentGameState.startGame(); // Set status to PLAYING and reset timers/stats
 
-        setScreen(new GameScreenView(assetManager, currentGameState, this));
+        setScreen(new GameMenuView(gameMenuController,getUiSkin()));
     }
 
     public void continueSavedGame() {
@@ -209,7 +210,7 @@ public class Main extends Game {
             // // loadedState.getPlayerInstance().setTextureAtlas(playerAtlas); // Player
             // needs this method
             // Gdx.app.log("Main", "Continuing saved game.");
-            // setScreen(new GameScreenView(assetManager, currentGameState, this));
+            // setScreen(new GameMenuView(assetManager, currentGameState, this));
             // return;
             // }
             Gdx.app.log("Main", "Failed to load saved game data.");
@@ -258,7 +259,7 @@ public class Main extends Game {
     // --- Screen Switching Methods ---
     public void setGameScreen() { // This might be deprecated if always starting via startNewGameSession
         if (currentGameState != null) {
-            setScreen(new GameScreenView(assetManager, currentGameState, this));
+            setScreen(new GameMenuView(gameMenuController, uiSkin));
         } else {
             Gdx.app.error("Main", "Cannot set game screen: currentGameState is null. Use startNewGameSession.");
             setPreGameMenuScreen(); // Go to pre-game setup if no game state
