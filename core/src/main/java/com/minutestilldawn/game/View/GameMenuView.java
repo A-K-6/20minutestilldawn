@@ -64,7 +64,7 @@ public class GameMenuView extends BaseMenuView {
         hudStage.addActor(table);
 
         // Load textures
-        mapTileTexture = assetManager.get(GameAssetManager.MAP_TILE_TEXTURE, Texture.class);
+        mapTileTexture = new Texture(Gdx.files.internal("pictures/MapTile.png"));
         mapTileTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         treeTexture = assetManager.getTreeTexture();
     }

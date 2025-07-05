@@ -60,17 +60,21 @@ public class Player {
         this.stateTime = 0f; // Initialize state time for animations
 
         // Load idle animation frames
-        Array<TextureRegion> idleFrames = new Array<>();
-        // Assuming idle.png is a single frame, add it once.
-        idleFrames.add(assetManager.getCharacterTexture(type, "idle", 0));
-        this.idleAnimation = new Animation<>(0.25f, idleFrames); // Static idle animation, duration doesn't matter much for single frame
+        Array<Texture> idleFrames = new Array<>();
+        idleFrames.add(assetManager.getCharacterTextureRaw(type, "idle", 0));
+        Array<TextureRegion> idleRegions = new Array<>();
+        for (Texture tex : idleFrames) idleRegions.add(new TextureRegion(tex));
+        this.idleAnimation = new Animation<>(0.25f, idleRegions); // Static idle animation
 
         // Load run animation frames
-        Array<TextureRegion> runFrames = new Array<>();
-        for (String path : type.getRunTexturePaths()) {
-            runFrames.add(new TextureRegion(assetManager.get(path, Texture.class))); // Get Texture directly, then convert to TextureRegion
+        Array<Texture> runFrames = new Array<>();
+        String[] runPaths = type.getRunTexturePaths();
+        for (int i = 0; i < runPaths.length; i++) {
+            runFrames.add(assetManager.get(runPaths[i], Texture.class));
         }
-        this.runAnimation = new Animation<>(0.1f, runFrames, Animation.PlayMode.LOOP); // Adjust frame duration as needed
+        Array<TextureRegion> runRegions = new Array<>();
+        for (Texture tex : runFrames) runRegions.add(new TextureRegion(tex));
+        this.runAnimation = new Animation<>(0.1f, runRegions, Animation.PlayMode.LOOP); // Adjust frame duration as needed
 
         this.currentFrame = idleAnimation.getKeyFrame(stateTime); // Initial frame is idle
     }
@@ -243,6 +247,14 @@ public class Player {
         this.stateTime = 0f; // Reset animation time
         this.currentFrame = idleAnimation.getKeyFrame(stateTime); // Reset to idle frame
         Gdx.app.log("Player", "Player reset for new game.");
+    }
+
+    public void draw(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
+        if (currentFrame != null) {
+            float width = currentFrame.getRegionWidth();
+            float height = currentFrame.getRegionHeight();
+            batch.draw(currentFrame, position.x - width / 2, position.y - height / 2);
+        }
     }
 
     public Vector2 getPosition() { return position; }

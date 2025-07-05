@@ -4,7 +4,6 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 // import com.kotcrab.vis.ui.VisUI; // Only if you are using VisUI
 
@@ -162,37 +161,20 @@ public class Main extends Game {
         Gdx.app.log("Main", "Starting new game session. Hero: " + characterType.name() +
                 ", Weapon: " + weaponName + ", Duration: " + durationMinutes + "m");
 
-        TextureAtlas playerAtlas = null;
-        try {
-            // Ensure player atlas is loaded. It should be in
-            // GameAssetManager.PLAYER_SPRITE_ATLAS
-            if (assetManager.isLoaded(GameAssetManager.PLAYER_SPRITE_ATLAS)) {
-                playerAtlas = assetManager.get(GameAssetManager.PLAYER_SPRITE_ATLAS, TextureAtlas.class);
-            } else {
-                Gdx.app.error("Main", "Player sprite atlas not loaded: " + GameAssetManager.PLAYER_SPRITE_ATLAS);
-                // Handle error: maybe go back to menu or use a placeholder
-                setMainMenuScreen(); // Go back if critical asset is missing
-                return;
-            }
-        } catch (Exception e) {
-            Gdx.app.error("Main", "Exception loading player atlas: " + e.getMessage());
-            setMainMenuScreen();
-            return;
-        }
-
+        // No need to load player_atlas.atlas, use individual PNGs via assetManager
         boolean autoReload = Gdx.app.getPreferences(PREFS_NAME).getBoolean("autoReload", false); // Get from settings
 
         currentGameState = new GameState(
-                currentUser, // Can be null for guest
+                currentUser,
                 characterType,
                 weaponName,
                 durationMinutes,
-                playerAtlas,
+                null, // No TextureAtlas needed
                 assetManager,
                 autoReload);
         currentGameState.startGame(); // Set status to PLAYING and reset timers/stats
 
-        setScreen(new GameMenuView(gameMenuController,getUiSkin()));
+        setScreen(new GameMenuView(gameMenuController, getUiSkin()));
     }
 
     public void continueSavedGame() {

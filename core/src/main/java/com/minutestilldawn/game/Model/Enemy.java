@@ -154,6 +154,14 @@ public class Enemy implements Pool.Poolable {
         currentDashTime = 0f;
     }
 
+    public void draw(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
+        if (texture != null) {
+            float width = texture.getRegionWidth();
+            float height = texture.getRegionHeight();
+            batch.draw(texture, position.x - width / 2, position.y - height / 2);
+        }
+    }
+
     public boolean isActive() {
         return active;
     }

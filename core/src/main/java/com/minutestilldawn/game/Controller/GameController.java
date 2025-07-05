@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
@@ -11,7 +12,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.TimeUtils;
 import com.minutestilldawn.game.Main;
 import com.minutestilldawn.game.Model.*;
 
@@ -84,7 +84,7 @@ public class GameController extends InputAdapter {
         // Spawn initial trees randomly (PDF: "در ابتدای شروع کردن بازی به صورت رندوم در
         // جاهای مختلف قرار گیرند")
         int numTrees = 10; // Example number
-        TextureRegion treeTexture = assetManager.getTreeTexture();
+        Texture treeTexture = assetManager.getTreeFrames()[0];
         for (int i = 0; i < numTrees; i++) {
             // Spawn within a certain area, avoiding player start position
             float x = MathUtils.random(-500, 1300); // Example world bounds
@@ -419,8 +419,6 @@ public class GameController extends InputAdapter {
             return false;
 
         if (button == Input.Buttons.LEFT) {
-            Vector2 targetPos = gameState.isAutoAimActive() && autoAimTarget != null ? autoAimTarget.getPosition()
-                    : mouseWorldPos;
             player.shoot(mouseWorldPos, gameState.isAutoAimActive(),
                     autoAimTarget != null ? autoAimTarget.getPosition() : null, playerBulletPool, activePlayerBullets,
                     assetManager);

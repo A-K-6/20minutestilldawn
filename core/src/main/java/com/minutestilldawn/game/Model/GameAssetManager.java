@@ -44,40 +44,7 @@ public class GameAssetManager extends AssetManager {
     public static final String DEFAULT_BULLET_TEXTURE_REGION_NAME = "bullet_default";
     public static final String DEFAULT_ENEMY_TEXTURE_REGION_NAME = "enemy_default";
     public static final String DEFAULT_TREE_TEXTURE_REGION_NAME = "tree_default";
-    // Base path for characters
-    public static final String CHARACTER_BASE_PATH = "Heros/";
-    public static final String Shana_IDLE = CHARACTER_BASE_PATH + "Shana/Idle.png";
-    public static final String Shana_RUN_0 = CHARACTER_BASE_PATH + "Shana/Run_0.png";
-    public static final String Shana_RUN_1 = CHARACTER_BASE_PATH + "Shana/Run_1.png";
-    public static final String Shana_RUN_2 = CHARACTER_BASE_PATH + "Shana/Run_2.png";
-    public static final String Shana_RUN_3 = CHARACTER_BASE_PATH + "Shana/Run_3.png";
 
-    public static final String DIAMOND_IDLE = CHARACTER_BASE_PATH + "Diamond/Idle.png";
-    public static final String DIAMOND_RUN_0 = CHARACTER_BASE_PATH + "Diamond/Run_0.png";
-    public static final String DIAMOND_RUN_1 = CHARACTER_BASE_PATH + "Diamond/Run_1.png";
-    public static final String DIAMOND_RUN_2 = CHARACTER_BASE_PATH + "Diamond/Run_2.png";
-    public static final String DIAMOND_RUN_3 = CHARACTER_BASE_PATH + "Diamond/Run_3.png";
-
-    // Scarlet
-    public static final String SCARLET_IDLE = CHARACTER_BASE_PATH + "Scarlet/Idle.png";
-    public static final String SCARLET_RUN_0 = CHARACTER_BASE_PATH + "Scarlet/Run_0.png";
-    public static final String SCARLET_RUN_1 = CHARACTER_BASE_PATH + "Scarlet/Run_1.png";
-    public static final String SCARLET_RUN_2 = CHARACTER_BASE_PATH + "Scarlet/Run_2.png";
-    public static final String SCARLET_RUN_3 = CHARACTER_BASE_PATH + "Scarlet/Run_3.png";
-
-    // Lilith
-    public static final String LILITH_IDLE = CHARACTER_BASE_PATH + "Lilith/Idle.png";
-    public static final String LILITH_RUN_0 = CHARACTER_BASE_PATH + "Lilith/Run_0.png";
-    public static final String LILITH_RUN_1 = CHARACTER_BASE_PATH + "Lilith/Run_1.png";
-    public static final String LILITH_RUN_2 = CHARACTER_BASE_PATH + "Lilith/Run_2.png";
-    public static final String LILITH_RUN_3 = CHARACTER_BASE_PATH + "Lilith/Run_3.png";
-
-    // Dasher
-    public static final String DASHER_IDLE = CHARACTER_BASE_PATH + "Dasher/Idle.png";
-    public static final String DASHER_RUN_0 = CHARACTER_BASE_PATH + "Dasher/Run_0.png";
-    public static final String DASHER_RUN_1 = CHARACTER_BASE_PATH + "Dasher/Run_1.png";
-    public static final String DASHER_RUN_2 = CHARACTER_BASE_PATH + "Dasher/Run_2.png";
-    public static final String DASHER_RUN_3 = CHARACTER_BASE_PATH + "Dasher/Run_3.png";
 
     protected Sound clickSound;
     protected Sound popUpSound;
@@ -178,36 +145,6 @@ public class GameAssetManager extends AssetManager {
         load(MENU_BACKGROUND_TEXTURE, Texture.class);
         // load(SHOOT_SOUND, Sound.class);
 
-        // Load character textures
-        load(Shana_IDLE, Texture.class);
-        load(Shana_RUN_0, Texture.class);
-        load(Shana_RUN_1, Texture.class);
-        load(Shana_RUN_2, Texture.class);
-        load(Shana_RUN_3, Texture.class);
-
-        load(DIAMOND_IDLE, Texture.class);
-        load(DIAMOND_RUN_0, Texture.class);
-        load(DIAMOND_RUN_1, Texture.class);
-        load(DIAMOND_RUN_2, Texture.class);
-        load(DIAMOND_RUN_3, Texture.class);
-
-        load(SCARLET_IDLE, Texture.class);
-        load(SCARLET_RUN_0, Texture.class);
-        load(SCARLET_RUN_1, Texture.class);
-        load(SCARLET_RUN_2, Texture.class);
-        load(SCARLET_RUN_3, Texture.class);
-
-        load(LILITH_IDLE, Texture.class);
-        load(LILITH_RUN_0, Texture.class);
-        load(LILITH_RUN_1, Texture.class);
-        load(LILITH_RUN_2, Texture.class);
-        load(LILITH_RUN_3, Texture.class);
-
-        load(DASHER_IDLE, Texture.class);
-        load(DASHER_RUN_0, Texture.class);
-        load(DASHER_RUN_1, Texture.class);
-        load(DASHER_RUN_2, Texture.class);
-        load(DASHER_RUN_3, Texture.class);
 
         clickSound = Gdx.audio.newSound(Gdx.files.internal("sounds/UI Click 36.wav"));
         popUpSound = Gdx.audio.newSound(Gdx.files.internal("sounds/Pop (3).wav"));
@@ -275,6 +212,18 @@ public class GameAssetManager extends AssetManager {
         idleAnimationLilith = new Animation<>(0.1f, characterLilithIdle);
         idleAnimationScarlet = new Animation<>(0.1f, characterScarletIdle);
         idleAnimationShana = new Animation<>(0.1f, characterShanaIdle);
+
+        // Load all run animation frames for all characters (for AssetManager)
+        String[] shanaRun = {"pictures/Heros/Shana/run/Run_0 #8762.png", "pictures/Heros/Shana/run/Run_1 #8778.png", "pictures/Heros/Shana/run/Run_2 #8286.png", "pictures/Heros/Shana/run/Run_3 #8349.png"};
+        String[] diamondRun = {"pictures/Heros/Diamond/run/Run_0 #8760.png", "pictures/Heros/Diamond/run/Run_1 #8776.png", "pictures/Heros/Diamond/run/Run_2 #8284.png", "pictures/Heros/Diamond/run/Run_3 #8347.png"};
+        String[] scarletRun = {"pictures/Heros/Scarlet/run/Run_0 #8759.png", "pictures/Heros/Scarlet/run/Run_1 #8775.png", "pictures/Heros/Scarlet/run/Run_2 #8283.png", "pictures/Heros/Scarlet/run/Run_3 #8346.png"};
+        String[] lilithRun = {"pictures/Heros/Lilith/run/Run_0 #8765.png", "pictures/Heros/Lilith/run/Run_1 #8781.png", "pictures/Heros/Lilith/run/Run_2 #8289.png", "pictures/Heros/Lilith/run/Run_3 #8352.png"};
+        String[] dasherRun = {"pictures/Heros/Dasher/run/Run_0 #8757.png", "pictures/Heros/Dasher/run/Run_1 #8773.png", "pictures/Heros/Dasher/run/Run_2 #8281.png", "pictures/Heros/Dasher/run/Run_3 #8344.png"};
+        for (String path : shanaRun) load(path, Texture.class);
+        for (String path : diamondRun) load(path, Texture.class);
+        for (String path : scarletRun) load(path, Texture.class);
+        for (String path : lilithRun) load(path, Texture.class);
+        for (String path : dasherRun) load(path, Texture.class);
 
         characterDasherActive = new Texture[] {
                 new Texture(Gdx.files.internal("pictures/Heros/Dasher/run/Run_0 #8757.png")),
@@ -423,34 +372,130 @@ public class GameAssetManager extends AssetManager {
      * public Skin getFlatEarthUISkin() { return get(FLAT_EARTH_SKIN, Skin.class); }
      */
     /**
-     * Retrieves a specific character animation frame.
-     * 
+     * Retrieves a specific character animation frame as a TextureRegion.
      * @param type           The CharacterType (e.g., SHANA).
-     * @param animationState The state of the animation ("idle", "run", etc.).
-     * @param frameIndex     The index of the frame (for "run", 1-4; for "idle", 0
-     *                       or any single index).
+     * @param animationState The state of the animation ("idle", "run").
+     * @param frameIndex     The index of the frame (for "run", 0-3; for "idle", 0).
      * @return The TextureRegion for the requested animation frame.
      */
     public TextureRegion getCharacterTexture(CharacterType type, String animationState, int frameIndex) {
-        String path = "";
-        String characterName = type.name().toLowerCase(); // e.g., "shana"
-
-        if ("idle".equals(animationState)) {
-            path = CHARACTER_BASE_PATH + characterName + "/idle.png";
-        } else if ("run".equals(animationState)) {
-            path = CHARACTER_BASE_PATH + characterName + "/Run_" + frameIndex + ".png";
-        } else {
-            Gdx.app.error("GameAssetManager", "Unknown animation state: " + animationState);
-            path = Default_Avatar; // Fallback
+        // Normalize frameIndex for idle (always 0) and for run (0-3)
+        if (animationState.equalsIgnoreCase("idle")) {
+            switch (type) {
+                case SHANA:
+                    if (characterShanaIdle != null && characterShanaIdle.length > 0)
+                        return new TextureRegion(characterShanaIdle[0]);
+                    break;
+                case DIAMOND:
+                    if (characterDiamondIdle != null && characterDiamondIdle.length > 0)
+                        return new TextureRegion(characterDiamondIdle[0]);
+                    break;
+                case SCARLET:
+                    if (characterScarletIdle != null && characterScarletIdle.length > 0)
+                        return new TextureRegion(characterScarletIdle[0]);
+                    break;
+                case LILITH:
+                    if (characterLilithIdle != null && characterLilithIdle.length > 0)
+                        return new TextureRegion(characterLilithIdle[0]);
+                    break;
+                case DASHER:
+                    if (characterDasherIdle != null && characterDasherIdle.length > 0)
+                        return new TextureRegion(characterDasherIdle[0]);
+                    break;
+            }
+        } else if (animationState.equalsIgnoreCase("run")) {
+            int idx = Math.max(0, Math.min(frameIndex, 3));
+            switch (type) {
+                case SHANA:
+                    if (characterShanaActive != null && characterShanaActive.length > idx)
+                        return new TextureRegion(characterShanaActive[idx]);
+                    break;
+                case DIAMOND:
+                    if (characterDiamondActive != null && characterDiamondActive.length > idx)
+                        return new TextureRegion(characterDiamondActive[idx]);
+                    break;
+                case SCARLET:
+                    if (characterScarletActive != null && characterScarletActive.length > idx)
+                        return new TextureRegion(characterScarletActive[idx]);
+                    break;
+                case LILITH:
+                    if (characterLilithActive != null && characterLilithActive.length > idx)
+                        return new TextureRegion(characterLilithActive[idx]);
+                    break;
+                case DASHER:
+                    if (characterDasherActive != null && characterDasherActive.length > idx)
+                        return new TextureRegion(characterDasherActive[idx]);
+                    break;
+            }
         }
-
-        if (isLoaded(path)) {
-            return new TextureRegion(get(path, Texture.class));
-        } else {
-            Gdx.app.error("GameAssetManager",
-                    "Character texture not loaded: " + path + ". Falling back to default avatar.");
-            return new TextureRegion(get(Default_Avatar, Texture.class)); // Fallback to default avatar
+        // Fallback: return a placeholder or default avatar
+        Gdx.app.error("GameAssetManager", "Character texture not loaded for type: " + type + ", state: " + animationState + ", frame: " + frameIndex);
+        if (isLoaded(Default_Avatar, Texture.class)) {
+            return new TextureRegion(get(Default_Avatar, Texture.class));
         }
+        return null;
+    }
+
+    /**
+     * Returns the Texture for a given character, animation state, and frame index.
+     * Used for animation frame loading in Player.
+     * @param type CharacterType
+     * @param animationState "idle" or "run"
+     * @param frameIndex frame index (0 for idle, 0-3 for run)
+     * @return Texture for the requested frame, or null if not found
+     */
+    public Texture getCharacterTextureRaw(CharacterType type, String animationState, int frameIndex) {
+        if (animationState.equalsIgnoreCase("idle")) {
+            switch (type) {
+                case SHANA:
+                    if (characterShanaIdle != null && characterShanaIdle.length > frameIndex)
+                        return characterShanaIdle[frameIndex];
+                    break;
+                case DIAMOND:
+                    if (characterDiamondIdle != null && characterDiamondIdle.length > frameIndex)
+                        return characterDiamondIdle[frameIndex];
+                    break;
+                case SCARLET:
+                    if (characterScarletIdle != null && characterScarletIdle.length > frameIndex)
+                        return characterScarletIdle[frameIndex];
+                    break;
+                case LILITH:
+                    if (characterLilithIdle != null && characterLilithIdle.length > frameIndex)
+                        return characterLilithIdle[frameIndex];
+                    break;
+                case DASHER:
+                    if (characterDasherIdle != null && characterDasherIdle.length > frameIndex)
+                        return characterDasherIdle[frameIndex];
+                    break;
+            }
+        } else if (animationState.equalsIgnoreCase("run")) {
+            int idx = Math.max(0, Math.min(frameIndex, 3));
+            switch (type) {
+                case SHANA:
+                    if (characterShanaActive != null && characterShanaActive.length > idx)
+                        return characterShanaActive[idx];
+                    break;
+                case DIAMOND:
+                    if (characterDiamondActive != null && characterDiamondActive.length > idx)
+                        return characterDiamondActive[idx];
+                    break;
+                case SCARLET:
+                    if (characterScarletActive != null && characterScarletActive.length > idx)
+                        return characterScarletActive[idx];
+                    break;
+                case LILITH:
+                    if (characterLilithActive != null && characterLilithActive.length > idx)
+                        return characterLilithActive[idx];
+                    break;
+                case DASHER:
+                    if (characterDasherActive != null && characterDasherActive.length > idx)
+                        return characterDasherActive[idx];
+                    break;
+            }
+        }
+        // Fallback: return null
+        Gdx.app.error("GameAssetManager", "Character texture not loaded for type: " + type + ", state: " + animationState + ", frame: " + frameIndex);
+        return null;
     }
 
     public Skin getGameSkin() {

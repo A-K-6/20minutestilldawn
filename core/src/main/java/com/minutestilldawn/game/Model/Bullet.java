@@ -1,7 +1,6 @@
 package com.minutestilldawn.game.Model;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool; // For object pooling
@@ -89,6 +88,14 @@ public class Bullet implements Pool.Poolable {
 
     public Rectangle getBounds() {
         return bounds;
+    }
+
+    public void draw(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
+        if (texture != null && active) {
+            float width = texture.getWidth();
+            float height = texture.getHeight();
+            batch.draw(texture, position.x - width / 2, position.y - height / 2);
+        }
     }
 
     @Override
