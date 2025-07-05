@@ -75,7 +75,10 @@ public class GameMenuView extends BaseMenuView {
         gameController.update(delta);
 
         // Center camera on player
-        gameCamera.position.set(gameState.getPlayerInstance().getPosition().x, gameState.getPlayerInstance().getPosition().y, 0);
+        Player player = gameState.getPlayerInstance();
+        if (player != null) {
+            gameCamera.position.set(player.getPosition().x, player.getPosition().y, 0);
+        }
         gameCamera.update();
 
         batch.setProjectionMatrix(gameCamera.combined);
@@ -84,7 +87,7 @@ public class GameMenuView extends BaseMenuView {
         drawGameElements();
         batch.end();
 
-        drawHUD();
+        drawHUD(); // Always draw HUD last
     }
 
     private void drawBackground() {
@@ -94,22 +97,22 @@ public class GameMenuView extends BaseMenuView {
 
     private void drawGameElements() {
         Player player = gameState.getPlayerInstance();
-        player.draw(batch);
+        if (player != null) player.draw(batch);
 
         for (Tree tree : gameController.getTrees()) {
-            tree.draw(batch);
+            if (tree != null) tree.draw(batch);
         }
 
         for (Enemy enemy : gameController.getActiveEnemies()) {
-            enemy.draw(batch);
+            if (enemy != null) enemy.draw(batch);
         }
 
         for (Bullet bullet : gameController.getActivePlayerBullets()) {
-            bullet.draw(batch);
+            if (bullet != null) bullet.draw(batch);
         }
 
         for (Bullet bullet : gameController.getActiveEnemyBullets()) {
-            bullet.draw(batch);
+            if (bullet != null) bullet.draw(batch);
         }
     }
 
