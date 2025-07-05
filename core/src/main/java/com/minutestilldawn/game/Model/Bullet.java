@@ -1,5 +1,6 @@
 package com.minutestilldawn.game.Model;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -9,7 +10,7 @@ public class Bullet implements Pool.Poolable {
     private Vector2 position;
     private Vector2 velocity;
     private int damage;
-    private TextureRegion texture;
+    private Texture texture;
     private boolean active; // For pooling
     private boolean isPlayerBullet;
     private float speed = 500.0f; // Default speed, can be adjusted
@@ -37,7 +38,7 @@ public class Bullet implements Pool.Poolable {
      * @param isPlayerBullet True if fired by player, false if by enemy.
      * @param bulletSpeed Speed of the bullet.
      */
-    public void init(float startX, float startY, Vector2 directionNormalized, int damage, TextureRegion texture, boolean isPlayerBullet, float bulletSpeed) {
+    public void init(float startX, float startY, Vector2 directionNormalized, int damage, Texture texture, boolean isPlayerBullet, float bulletSpeed) {
         this.position.set(startX, startY);
         this.speed = bulletSpeed;
         this.velocity.set(directionNormalized).scl(this.speed);
@@ -46,8 +47,8 @@ public class Bullet implements Pool.Poolable {
         this.isPlayerBullet = isPlayerBullet;
         this.active = true;
         // Adjust width/height if texture is available and has meaningful size
-        float width = (texture != null) ? texture.getRegionWidth() : DEFAULT_WIDTH;
-        float height = (texture != null) ? texture.getRegionHeight() : DEFAULT_HEIGHT;
+        float width = (texture != null) ? texture.getWidth() : DEFAULT_WIDTH;
+        float height = (texture != null) ? texture.getHeight() : DEFAULT_HEIGHT;
         this.bounds.set(startX - width / 2, startY - height / 2, width, height);
     }
 
@@ -66,7 +67,7 @@ public class Bullet implements Pool.Poolable {
         return position;
     }
 
-    public TextureRegion getTexture() {
+    public Texture getTexture() {
         return texture;
     }
 

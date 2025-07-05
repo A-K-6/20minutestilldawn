@@ -98,6 +98,12 @@ Heros/Shana/walk/Walk_5 #8688.png
 Heros/Shana/walk/Walk_6 #8442.png
 Heros/Shana/walk/Walk_7 #8214.png
 audio/Arrow Fly 3_3.wav
+audio/Beckoning.mp3
+audio/Lewd Doodles.mp3
+audio/Pretty Dungeon.mp3
+audio/Pump it.mp3
+audio/Suzume.mp3
+audio/Wasteland Combat.mp3
 avatars/avatar1.png
 avatars/avatar10.png
 avatars/avatar11.png
@@ -117,6 +123,149 @@ gameAssets/enemies/BrainMonster.atlas
 gameAssets/enemies/BrainMonster.png
 gameAssets/enemies/Shanker.atlas
 gameAssets/enemies/Shanker.png
+pictures/AvatarMenuFrame.png
+pictures/Bullet.png
+pictures/Check.png
+pictures/GameDuration.png
+pictures/Gun.png
+pictures/Hero.png
+pictures/Heros/Dasher/idle/Idle_0 #8325.png
+pictures/Heros/Dasher/idle/Idle_1 #8355.png
+pictures/Heros/Dasher/idle/Idle_2 #8814.png
+pictures/Heros/Dasher/idle/Idle_3 #8452.png
+pictures/Heros/Dasher/idle/Idle_4 #8313.png
+pictures/Heros/Dasher/idle/Idle_5 #8302.png
+pictures/Heros/Dasher/run/Run_0 #8757.png
+pictures/Heros/Dasher/run/Run_1 #8773.png
+pictures/Heros/Dasher/run/Run_2 #8281.png
+pictures/Heros/Dasher/run/Run_3 #8344.png
+pictures/Heros/Diamond/idle/Idle_0 #8328.png
+pictures/Heros/Diamond/idle/Idle_1 #8358.png
+pictures/Heros/Diamond/idle/Idle_2 #8817.png
+pictures/Heros/Diamond/idle/Idle_3 #8455.png
+pictures/Heros/Diamond/idle/Idle_4 #8316.png
+pictures/Heros/Diamond/idle/Idle_5 #8305.png
+pictures/Heros/Diamond/run/Run_0 #8760.png
+pictures/Heros/Diamond/run/Run_1 #8776.png
+pictures/Heros/Diamond/run/Run_2 #8284.png
+pictures/Heros/Diamond/run/Run_3 #8347.png
+pictures/Heros/Diamond/walk/Walk_0 #8277.png
+pictures/Heros/Diamond/walk/Walk_1 #8631.png
+pictures/Heros/Diamond/walk/Walk_2 #8710.png
+pictures/Heros/Diamond/walk/Walk_3 #8768.png
+pictures/Heros/Diamond/walk/Walk_4 #8464.png
+pictures/Heros/Diamond/walk/Walk_5 #8687.png
+pictures/Heros/Diamond/walk/Walk_6 #8441.png
+pictures/Heros/Diamond/walk/Walk_7 #8213.png
+pictures/Heros/Lilith/idle/Idle_0 #8333.png
+pictures/Heros/Lilith/idle/Idle_1 #8363.png
+pictures/Heros/Lilith/idle/Idle_2 #8822.png
+pictures/Heros/Lilith/idle/Idle_3 #8460.png
+pictures/Heros/Lilith/idle/Idle_4 #8321.png
+pictures/Heros/Lilith/idle/Idle_5 #8310.png
+pictures/Heros/Lilith/run/Run_0 #8765.png
+pictures/Heros/Lilith/run/Run_1 #8781.png
+pictures/Heros/Lilith/run/Run_2 #8289.png
+pictures/Heros/Lilith/run/Run_3 #8352.png
+pictures/Heros/Lilith/walk/Walk_0 #8279.png
+pictures/Heros/Lilith/walk/Walk_1 #8633.png
+pictures/Heros/Lilith/walk/Walk_2 #8712.png
+pictures/Heros/Lilith/walk/Walk_3 #8770.png
+pictures/Heros/Lilith/walk/Walk_4 #8465.png
+pictures/Heros/Lilith/walk/Walk_5 #8689.png
+pictures/Heros/Lilith/walk/Walk_6 #8443.png
+pictures/Heros/Lilith/walk/Walk_7 #8215.png
+pictures/Heros/Scarlet/idle/Idle_0 #8327.png
+pictures/Heros/Scarlet/idle/Idle_1 #8357.png
+pictures/Heros/Scarlet/idle/Idle_2 #8816.png
+pictures/Heros/Scarlet/idle/Idle_3 #8454.png
+pictures/Heros/Scarlet/idle/Idle_4 #8315.png
+pictures/Heros/Scarlet/idle/Idle_5 #8304.png
+pictures/Heros/Scarlet/run/Run_0 #8759.png
+pictures/Heros/Scarlet/run/Run_1 #8775.png
+pictures/Heros/Scarlet/run/Run_2 #8283.png
+pictures/Heros/Scarlet/run/Run_3 #8346.png
+pictures/Heros/Shana/idle/Idle_0 #8330.png
+pictures/Heros/Shana/idle/Idle_1 #8360.png
+pictures/Heros/Shana/idle/Idle_2 #8819.png
+pictures/Heros/Shana/idle/Idle_3 #8457.png
+pictures/Heros/Shana/idle/Idle_4 #8318.png
+pictures/Heros/Shana/idle/Idle_5 #8307.png
+pictures/Heros/Shana/run/Run_0 #8762.png
+pictures/Heros/Shana/run/Run_1 #8778.png
+pictures/Heros/Shana/run/Run_2 #8286.png
+pictures/Heros/Shana/run/Run_3 #8349.png
+pictures/Heros/Shana/walk/Walk_0 #8278.png
+pictures/Heros/Shana/walk/Walk_1 #8632.png
+pictures/Heros/Shana/walk/Walk_2 #8711.png
+pictures/Heros/Shana/walk/Walk_3 #8769.png
+pictures/Heros/Shana/walk/Walk_5 #8688.png
+pictures/Heros/Shana/walk/Walk_6 #8442.png
+pictures/Heros/Shana/walk/Walk_7 #8214.png
+pictures/Map.png
+pictures/MapTile.png
+pictures/Play.png
+pictures/RedArrow.png
+pictures/XP_Coin.png
+pictures/ability/Amocrease.png
+pictures/ability/Damager.png
+pictures/ability/Procrease.png
+pictures/ability/Speedy.png
+pictures/ability/Vitality.png
+pictures/avatars/Abby_Portrait.png
+pictures/avatars/Dasher_Portrait.png
+pictures/avatars/Diamond_Portrait.png
+pictures/avatars/Hastur_portrait.png
+pictures/avatars/Hina_Portrait.png
+pictures/avatars/Katana_portrait.png
+pictures/avatars/Lilith_Portrait.png
+pictures/avatars/Luna_Portrait.png
+pictures/avatars/Raven_portrait.png
+pictures/avatars/Scarlett_Portrait.png
+pictures/avatars/Shana_Portrait.png
+pictures/avatars/Spark_Portrait.png
+pictures/avatars/Yuki_Portrait.png
+pictures/bronze_medal.png
+pictures/cursor.png
+pictures/duration/10.png
+pictures/duration/2.png
+pictures/duration/20.png
+pictures/duration/5.png
+pictures/gold_medal.png
+pictures/guns/DualSMGs.png
+pictures/guns/Revolver.png
+pictures/guns/RevolverReload/RevolverReload_0.png
+pictures/guns/RevolverReload/RevolverReload_1.png
+pictures/guns/RevolverReload/RevolverReload_2.png
+pictures/guns/RevolverReload/RevolverReload_3.png
+pictures/guns/RevolverStill/RevolverStill.png
+pictures/guns/SMGReload/SMGReload_0.png
+pictures/guns/SMGReload/SMGReload_1.png
+pictures/guns/SMGReload/SMGReload_2.png
+pictures/guns/SMGReload/SMGReload_3.png
+pictures/guns/SMGStill/SMGStill.png
+pictures/guns/Shotgun.png
+pictures/guns/ShotgunReload/T_Shotgun_SS_1.png
+pictures/guns/ShotgunReload/T_Shotgun_SS_2.png
+pictures/guns/ShotgunReload/T_Shotgun_SS_3.png
+pictures/guns/ShotgunStill/T_Shotgun_SS_0.png
+pictures/monsters/elder/ElderBrain.png
+pictures/monsters/eyebat/T_EyeBat_0.png
+pictures/monsters/eyebat/T_EyeBat_1.png
+pictures/monsters/eyebat/T_EyeBat_2.png
+pictures/monsters/eyebat/T_EyeBat_3.png
+pictures/monsters/eyebat/T_EyeBat_EM.png
+pictures/monsters/tentacle/attack/T_TentacleEnemy_1.png
+pictures/monsters/tentacle/attack/T_TentacleEnemy_2.png
+pictures/monsters/tentacle/attack/T_TentacleEnemy_3.png
+pictures/monsters/tentacle/spawn/T_TentacleSpawn_0.png
+pictures/monsters/tentacle/spawn/T_TentacleSpawn_1.png
+pictures/monsters/tentacle/spawn/T_TentacleSpawn_2.png
+pictures/monsters/tree/T_TreeMonsterWalking.png
+pictures/monsters/tree/T_TreeMonster_0.png
+pictures/monsters/tree/T_TreeMonster_1.png
+pictures/monsters/tree/T_TreeMonster_2.png
+pictures/silver_medal.png
 pixthulhu/README.md
 pixthulhu/preview.png
 pixthulhu/preview2.png
@@ -192,6 +341,22 @@ pixthulhu/skin/font-title-export.fnt
 pixthulhu/skin/pixthulhu-ui.atlas
 pixthulhu/skin/pixthulhu-ui.json
 pixthulhu/skin/pixthulhu-ui.png
+sounds/AvatarChoose.mp3
+sounds/Bat_Death_02.wav
+sounds/Buff_Power_Up_01.wav
+sounds/Footsteps_Casual_Grass_01.wav
+sounds/Monster_2_RecieveAttack_HighIntensity_01.wav
+sounds/Obtain_Points_01.wav
+sounds/Pop (3).wav
+sounds/Standard_Weapon_Whoosh_02.wav
+sounds/Switch (8).wav
+sounds/UI Click 36.wav
+sounds/Weapon_Shotgun_Reload.wav
+sounds/You Lose (4).wav
+sounds/You Win (2).wav
+sounds/male-hurt-sound-95206.mp3
+sounds/sfx_sounds_impact1.wav
+sounds/single_shot.wav
 sprites/player_atlas.atlas
 ui/font-list.fnt
 ui/font-subtitle.fnt
@@ -200,3 +365,4 @@ ui/font.fnt
 ui/uiskin.atlas
 ui/uiskin.json
 ui/uiskin.png
+user_data.db

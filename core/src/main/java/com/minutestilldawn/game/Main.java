@@ -36,6 +36,34 @@ public class Main extends Game {
     // GameController is typically instantiated by GameScreenView with a GameState
 
     // Current User State
+    private static boolean isMusicDisabled = false;
+    public static boolean isMusicDisabled() {
+        return isMusicDisabled;
+    }
+
+    public static void setMusicDisabled(boolean isMusicDisabled) {
+        Main.isMusicDisabled = isMusicDisabled;
+    }
+
+    private static boolean isMenuSFXDisabled = false;
+    public static boolean isMenuSFXDisabled() {
+        return isMenuSFXDisabled;
+    }
+
+    public static void setMenuSFXDisabled(boolean isMenuSFXDisabled) {
+        Main.isMenuSFXDisabled = isMenuSFXDisabled;
+    }
+
+    private static boolean isGameSFXDisabled = false;
+
+    public static boolean isGameSFXDisabled() {
+        return isGameSFXDisabled;
+    }
+
+    public static void setGameSFXDisabled(boolean isGameSFXDisabled) {
+        Main.isGameSFXDisabled = isGameSFXDisabled;
+    }
+
     private User currentUser; // Currently logged-in user
     private boolean isGuest = false; // Flag for guest session
     private GameState currentGameState; // Holds the state of an active or paused game
@@ -269,9 +297,10 @@ public class Main extends Game {
         // Make sure HintMenuView and HintMenuController are created
         // For now, assuming it exists and is similar to other menu screens
         if (hintMenuController == null)
-            hintMenuController = new HintMenuController(this);{
-                setScreen(new HintMenuView(hintMenuController, uiSkin)); // Assuming HintMenuView exists
-            }
+            hintMenuController = new HintMenuController(this);
+        {
+            setScreen(new HintMenuView(hintMenuController, uiSkin)); // Assuming HintMenuView exists
+        }
     }
 
     // --- Getters ---

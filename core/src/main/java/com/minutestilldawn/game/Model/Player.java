@@ -140,7 +140,7 @@ public class Player {
         if (shotDirection.len2() == 0) shotDirection.set(aimDirection); // Fallback if target is on player
 
         int bulletDamage = getEffectiveDamage(currentWeapon.getDamage());
-        TextureRegion bulletTexture = assetManager.getBulletTexture(currentWeapon.getName()); // Assumes method in AssetManager
+        Texture bulletTexture = assetManager.getBullet(); // Assumes method in AssetManager
 
         for (int i = 0; i < currentWeapon.getProjectilesPerShot(); i++) {
             Bullet bullet = bulletPool.obtain();

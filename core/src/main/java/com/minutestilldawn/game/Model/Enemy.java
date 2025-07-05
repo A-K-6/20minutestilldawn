@@ -1,6 +1,7 @@
 package com.minutestilldawn.game.Model;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -106,7 +107,7 @@ public class Enemy implements Pool.Poolable {
                 Bullet bullet = bulletPool.obtain();
                 Vector2 direction = new Vector2(playerPosition).sub(position).nor();
                 // TODO: Get a proper enemy bullet texture
-                TextureRegion bulletTexture = assetManager.getEnemyBulletTexture(type);
+                Texture bulletTexture = assetManager.getBullet();
                 bullet.init(position.x, position.y, direction, EYEBAT_BULLET_DAMAGE, bulletTexture, false,
                         EYEBAT_BULLET_SPEED);
                 activeEnemyBullets.add(bullet);
