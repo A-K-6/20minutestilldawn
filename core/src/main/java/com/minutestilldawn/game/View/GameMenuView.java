@@ -44,6 +44,8 @@ public class GameMenuView extends BaseMenuView {
     private PauseMenuView pauseMenuView;
     private boolean pauseMenuShown = false;
 
+    private Table overlayTable;
+
     // UI elements
     private Table userInfoTable;
 
@@ -83,24 +85,29 @@ public class GameMenuView extends BaseMenuView {
         hudTable.add(statsLabel).left().padLeft(16).padTop(5).row();
         hudStage.addActor(hudTable);
 
-        // User info box: always at top right, not inside hudTable
-        userInfoTable = new Table(skin);
-        userInfoTable.top().right();
-        userInfoTable.setWidth(220);
-        userInfoTable.setHeight(180);
-        userInfoTable.setPosition(1280 - 240, 720 - 40); // 20px from right, 40px from top
-        hudStage.addActor(userInfoTable);
-        updateUserInfoTable(); // Ensure info box is visible at start
-
         // Pause button logic (fix size, always clickable)
-        pauseButton.addListener(new com.badlogic.gdx.scenes.scene2d.utils.ClickListener() {
-            @Override
-            public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
+
+        userInfoTable = new Table(skin);
+        userInfoTable.setTransform(true); // Enable transformations for scaling
+        userInfoTable.setScale(0.5f); // Apply a scale to the entire table and its contents
+        userInfoTable.top().left();
+        updateUserInfoTable(); // Fill content
+
+        overlayTable = new Table();
+        overlayTable.setFillParent(true);
+        overlayTable.top().left();
+        // Add userInfoTable to overlayTable with padding to position it in the top-left
+        // The expand().top().left() ensures it's pushed to the corner within the overlayTable
+        overlayTable.add(userInfoTable).padTop(10).padLeft(10).expand().top().left(); 
+        
+        hudStage.addActor(overlayTable);
+
+        pauseButton.addListener(event -> {
                 if (gameState.getCurrentStatus() == GameStatus.PLAYING) {
                     gameState.setCurrentStatus(GameStatus.PAUSED);
                     pauseMenuShown = false;
                 }
-            }
+                return false; 
         });
 
         // --- GameController creation (with camera) ---
@@ -113,37 +120,78 @@ public class GameMenuView extends BaseMenuView {
         super.resize(width, height);
         gameViewport.update(width, height, true);
         hudStage.getViewport().update(width, height, true);
-        // Always reposition user info table to the top right
-        userInfoTable.setPosition(width - 240, height - 40);
+        // Removed manual positioning of userInfoTable here.
+        // It's now handled by the overlayTable's layout constraints and userInfoTable's scale.
     }
 
     private void updateUserInfoTable() {
         userInfoTable.clear();
+
         Player player = gameState.getPlayerInstance();
-        if (player == null) return;
+        if (player == null)
+            return;
+
         User user = player.getUser();
         boolean isGuest = (user == null);
         String usernameText = isGuest ? "Guest" : user.getUsername();
         String avatarPath = isGuest ? GameAssetManager.Default_Avatar : "avatars/avatar" + user.getAvatarId() + ".png";
         Texture avatarTexture = assetManager.getAvatarTexture(avatarPath);
+
         if (avatarTexture != null) {
-            com.badlogic.gdx.scenes.scene2d.ui.Image avatarImg = new com.badlogic.gdx.scenes.scene2d.ui.Image(avatarTexture);
-            avatarImg.setSize(40, 40);
-            userInfoTable.add(avatarImg).colspan(2).padBottom(5).row();
+            com.badlogic.gdx.scenes.scene2d.ui.Image avatarImg = new com.badlogic.gdx.scenes.scene2d.ui.Image(
+                    avatarTexture);
+            avatarImg.setSize(12, 12); // Further reduced avatar size
+            userInfoTable.add(avatarImg).colspan(2).padBottom(0).row(); // Reduced padding to 0
         }
-        userInfoTable.add(new Label("User: " + usernameText, userInfoTable.getSkin())).left().colspan(2).row();
+
+        Label userLabel = new Label("User: " + usernameText, userInfoTable.getSkin());
+        userLabel.setFontScale(0.7f); // Scale font for this label
+        userInfoTable.add(userLabel).left().colspan(2).padBottom(0).row(); // Reduced padding to 0
+
         if (!isGuest && user != null) {
-            userInfoTable.add(new Label("High Score:", userInfoTable.getSkin())).left();
-            userInfoTable.add(new Label(String.valueOf(user.getHighestScore()), userInfoTable.getSkin())).right().row();
-            userInfoTable.add(new Label("Kills:", userInfoTable.getSkin())).left();
-            userInfoTable.add(new Label(String.valueOf(user.getTotalKills()), userInfoTable.getSkin())).right().row();
+            Label scoreLabel = new Label("Score:", userInfoTable.getSkin());
+            scoreLabel.setFontScale(0.7f); // Scale font for this label
+            userInfoTable.add(scoreLabel).left().padBottom(0); // Reduced padding to 0
+            Label highestScoreLabel = new Label(String.valueOf(user.getHighestScore()), userInfoTable.getSkin());
+            highestScoreLabel.setFontScale(0.7f); // Scale font for this label
+            userInfoTable.add(highestScoreLabel).right().padBottom(0).row(); // Reduced padding to 0
+
+            Label killsLabel = new Label("Kills:", userInfoTable.getSkin());
+            killsLabel.setFontScale(0.7f); // Scale font for this label
+            userInfoTable.add(killsLabel).left().padBottom(0); // Reduced padding to 0
+            Label totalKillsLabel = new Label(String.valueOf(user.getTotalKills()), userInfoTable.getSkin());
+            totalKillsLabel.setFontScale(0.7f); // Scale font for this label
+            userInfoTable.add(totalKillsLabel).right().padBottom(0).row(); // Reduced padding to 0
         }
-        userInfoTable.add(new Label("Weapon:", userInfoTable.getSkin())).left();
-        userInfoTable.add(new Label(player.getCurrentWeapon() != null ? player.getCurrentWeapon().getName() : "-", userInfoTable.getSkin())).right().row();
-        userInfoTable.add(new Label("Ammo:", userInfoTable.getSkin())).left();
-        userInfoTable.add(new Label(player.getCurrentWeapon() != null ? (player.getCurrentWeapon().getCurrentAmmo() + "/" + player.getCurrentWeapon().getMaxAmmo()) : "-", userInfoTable.getSkin())).right().row();
-        userInfoTable.add(new Label("XP:", userInfoTable.getSkin())).left();
-        userInfoTable.add(new Label(player.getXp() + "/" + player.getXpNeededForNextLevel(), userInfoTable.getSkin())).right().row();
+
+        Label weaponLabel = new Label("Weapon:", userInfoTable.getSkin());
+        weaponLabel.setFontScale(0.7f); // Scale font for this label
+        userInfoTable.add(weaponLabel).left().padBottom(0); // Reduced padding to 0
+        Label currentWeaponLabel = new Label(
+                player.getCurrentWeapon() != null ? player.getCurrentWeapon().getName() : "-",
+                userInfoTable.getSkin());
+        currentWeaponLabel.setFontScale(0.7f); // Scale font for this label
+        userInfoTable.add(currentWeaponLabel).right().padBottom(0).row(); // Reduced padding to 0
+
+        Label ammoLabel = new Label("Ammo:", userInfoTable.getSkin());
+        ammoLabel.setFontScale(0.7f); // Scale font for this label
+        userInfoTable.add(ammoLabel).left().padBottom(0); // Reduced padding to 0
+        Label currentAmmoLabel = new Label(
+                player.getCurrentWeapon() != null
+                        ? (player.getCurrentWeapon().getCurrentAmmo() + "/" + player.getCurrentWeapon().getMaxAmmo())
+                        : "-",
+                userInfoTable.getSkin());
+        currentAmmoLabel.setFontScale(0.7f); // Scale font for this label
+        userInfoTable.add(currentAmmoLabel).right().padBottom(0).row(); // Reduced padding to 0
+
+        Label xpLabel = new Label("XP:", userInfoTable.getSkin());
+        xpLabel.setFontScale(0.7f); // Scale font for this label
+        userInfoTable.add(xpLabel).left().padBottom(0); // Reduced padding to 0
+        Label currentXpLabel = new Label(
+                player.getXp() + "/" + player.getXpNeededForNextLevel(),
+                userInfoTable.getSkin());
+        currentXpLabel.setFontScale(0.7f); // Scale font for this label
+        userInfoTable.add(currentXpLabel).right().padBottom(0).row(); // Reduced padding to 0
     }
 
     @Override
@@ -155,7 +203,7 @@ public class GameMenuView extends BaseMenuView {
         }
         float elapsedSeconds = gameState.getElapsedTimeSeconds();
         timerLabel.setText(getFormattedTime(elapsedSeconds));
-        updateUserInfoTable();
+        updateUserInfoTable(); // Call updateUserInfoTable in render to ensure it's always up-to-date
         // Pause menu logic
         if (gameState.getCurrentStatus() == GameStatus.PAUSED) {
             if (!pauseMenuShown) {
@@ -198,7 +246,8 @@ public class GameMenuView extends BaseMenuView {
                     float gw = gunTexture.getWidth();
                     float gh = gunTexture.getHeight();
                     float angle = player.getAimDirection().angleDeg();
-                    batch.draw(gunTexture, px - gw/2, py - gh/2, gw/2, gh/2, gw, gh, 1, 1, angle, 0, 0, (int)gw, (int)gh, false, false);
+                    batch.draw(gunTexture, px - gw / 2, py - gh / 2, gw / 2, gh / 2, gw, gh, 1, 1, angle, 0, 0,
+                            (int) gw, (int) gh, false, false);
                 }
             }
             batch.end();
@@ -257,7 +306,8 @@ public class GameMenuView extends BaseMenuView {
                 float gw = gunTexture.getWidth();
                 float gh = gunTexture.getHeight();
                 float angle = player.getAimDirection().angleDeg();
-                batch.draw(gunTexture, px - gw/2, py - gh/2, gw/2, gh/2, gw, gh, 1, 1, angle, 0, 0, (int)gw, (int)gh, false, false);
+                batch.draw(gunTexture, px - gw / 2, py - gh / 2, gw / 2, gh / 2, gw, gh, 1, 1, angle, 0, 0, (int) gw,
+                        (int) gh, false, false);
             }
         }
         batch.end();
@@ -296,22 +346,27 @@ public class GameMenuView extends BaseMenuView {
 
     private void drawGameElements() {
         Player player = gameState.getPlayerInstance();
-        if (player != null) player.draw(batch);
+        if (player != null)
+            player.draw(batch);
 
         for (Tree tree : gameController.getTrees()) {
-            if (tree != null) tree.draw(batch);
+            if (tree != null)
+                tree.draw(batch);
         }
 
-        for (Enemy enemy : gameController.getActiveEnemies()) {
-            if (enemy != null) enemy.draw(batch);
+        for (Enemy enemy : gameController.getActiveEnemies()) { // Changed from getActiveEnemies() to getEnemies() to ensure all enemies are drawn
+            if (enemy != null)
+                enemy.draw(batch);
         }
 
         for (Bullet bullet : gameController.getActivePlayerBullets()) {
-            if (bullet != null) bullet.draw(batch);
+            if (bullet != null)
+                bullet.draw(batch);
         }
 
         for (Bullet bullet : gameController.getActiveEnemyBullets()) {
-            if (bullet != null) bullet.draw(batch);
+            if (bullet != null)
+                bullet.draw(batch);
         }
     }
 

@@ -446,6 +446,7 @@ public class GameController extends InputAdapter {
             return false;
 
         if (button == Input.Buttons.LEFT) {
+            
             player.shoot(mouseWorldPos, gameState.isAutoAimActive(),
                     autoAimTarget != null ? autoAimTarget.getPosition() : null, playerBulletPool, activePlayerBullets,
                     assetManager);

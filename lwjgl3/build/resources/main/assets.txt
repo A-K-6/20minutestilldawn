@@ -104,6 +104,7 @@ audio/Pretty Dungeon.mp3
 audio/Pump it.mp3
 audio/Suzume.mp3
 audio/Wasteland Combat.mp3
+avatars/avatar0.png
 avatars/avatar1.png
 avatars/avatar10.png
 avatars/avatar11.png

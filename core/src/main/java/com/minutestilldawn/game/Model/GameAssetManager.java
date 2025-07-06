@@ -523,6 +523,9 @@ public class GameAssetManager extends AssetManager {
         if (isLoaded(Default_Avatar, Texture.class)) {
             return get(Default_Avatar, Texture.class);
         }
+        else{
+            
+        }
         Gdx.app.error("GameAssetManager", "Default avatar texture also not loaded: " + Default_Avatar);
         return null;
     }
