@@ -25,7 +25,7 @@ public class PauseMenuView { // Not extending BaseMenuView if it's just a Table 
     private void setupUI() {
         // TODO: Implement Pause Menu UI (Resume, Restart, Settings, Main Menu, Exit)
         table.center();
-        table.add(new Label("Game Paused", skin, "default-font", "white")).pad(20).row();
+        table.add(new Label("Game Paused", skin)).pad(20).row();
         TextButton resumeButton = new TextButton("Resume", skin);
         TextButton exitToMainButton = new TextButton("Exit to Main Menu", skin);
         table.add(resumeButton).pad(10).row();
