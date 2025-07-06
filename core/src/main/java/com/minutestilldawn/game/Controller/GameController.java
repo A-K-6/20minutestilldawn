@@ -362,6 +362,17 @@ public class GameController extends InputAdapter {
         if (gameState.getCurrentStatus() != GameStatus.PLAYING)
             return false;
 
+        if (keycode == Input.Keys.ESCAPE) {
+            if (gameState.getCurrentStatus() == GameStatus.PLAYING) {
+                gameState.setCurrentStatus(GameStatus.PAUSED);
+                // Show pause menu overlay (call a method in your view)
+            } else if (gameState.getCurrentStatus() == GameStatus.PAUSED) {
+                gameState.setCurrentStatus(GameStatus.PLAYING);
+                // Hide pause menu overlay
+            }
+            return true;
+        }
+
         if (keycode == Input.Keys.R) {
             player.reloadWeapon();
             return true;

@@ -119,7 +119,7 @@ public class Player {
 
     public void move(Vector2 direction, float delta) {
         if (direction.len() > 0) {
-            position.mulAdd(direction.nor(), currentSpeed * delta); // Use currentSpeed
+            position.mulAdd(direction.nor(), currentSpeed * delta *40f); // Use currentSpeed
         }
     }
     
