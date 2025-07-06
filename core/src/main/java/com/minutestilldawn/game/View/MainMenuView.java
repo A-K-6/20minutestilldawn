@@ -129,6 +129,13 @@ public class MainMenuView extends BaseMenuView {
             return false;
         });
 
+        hintButton.addListener(event -> {
+            if (hintButton.isPressed()) {
+                controller.onButtonClicked("hint");
+            }
+            return false;
+        });
+
         // Exit Button
         exitButton.addListener(event -> {
             if (exitButton.isPressed()) {
