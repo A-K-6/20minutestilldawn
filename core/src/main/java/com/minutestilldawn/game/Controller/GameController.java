@@ -356,22 +356,31 @@ public class GameController extends InputAdapter {
         gameState.setCurrentStatus(GameStatus.PLAYING);
     }
 
+    // Add a public method to resume the game from pause menu
+    public void resumeGame() {
+        if (gameState.getCurrentStatus() == GameStatus.PAUSED) {
+            gameState.setCurrentStatus(GameStatus.PLAYING);
+        }
+    }
+
     // --- InputAdapter Overrides ---
     @Override
     public boolean keyDown(int keycode) {
-        if (gameState.getCurrentStatus() != GameStatus.PLAYING)
-            return false;
-
+        // Allow ESC to pause from any state except already paused or modal
         if (keycode == Input.Keys.ESCAPE) {
             if (gameState.getCurrentStatus() == GameStatus.PLAYING) {
                 gameState.setCurrentStatus(GameStatus.PAUSED);
-                // Show pause menu overlay (call a method in your view)
+                return true;
             } else if (gameState.getCurrentStatus() == GameStatus.PAUSED) {
-                gameState.setCurrentStatus(GameStatus.PLAYING);
-                // Hide pause menu overlay
+                // Optionally resume if already paused (toggle)
+                resumeGame();
+                return true;
             }
-            return true;
+            // Ignore ESC in other modal/game over states
+            return false;
         }
+        if (gameState.getCurrentStatus() != GameStatus.PLAYING)
+            return false;
 
         if (keycode == Input.Keys.R) {
             player.reloadWeapon();
