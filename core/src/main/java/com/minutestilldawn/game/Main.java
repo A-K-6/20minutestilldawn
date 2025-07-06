@@ -31,7 +31,6 @@ public class Main extends Game {
     private RegistrationMenuController registrationMenuController;
     private PreGameMenuController preGameMenuController; // New
     private HintMenuController hintMenuController; // New (if you create one)
-    private GameMenuController gameMenuController;
     // GameController is typically instantiated by GameMenuView with a GameState
 
     // Current User State
@@ -94,7 +93,6 @@ public class Main extends Game {
         registrationMenuController = new RegistrationMenuController(this, userDao); // Pass DAO
         preGameMenuController = new PreGameMenuController(this);
         hintMenuController = new HintMenuController(this); // Assuming you have this controller
-        gameMenuController = new GameMenuController(this);
         // Start with Login Screen
         setScreen(new LoginMenuView(loginMenuController, uiSkin));
     }
@@ -174,7 +172,7 @@ public class Main extends Game {
                 autoReload);
         currentGameState.startGame(); // Set status to PLAYING and reset timers/stats
 
-        setScreen(new GameMenuView(gameMenuController, getUiSkin()));
+        setScreen(new GameMenuView(this, currentGameState, assetManager, uiSkin));
     }
 
     public void continueSavedGame() {
@@ -239,12 +237,13 @@ public class Main extends Game {
     }
 
     // --- Screen Switching Methods ---
-    public void setGameScreen() { // This might be deprecated if always starting via startNewGameSession
+    public void setGameScreen() {
         if (currentGameState != null) {
-            setScreen(new GameMenuView(gameMenuController, uiSkin));
+            // Use the correct GameMenuView constructor with all required arguments
+            setScreen(new GameMenuView(this, currentGameState, assetManager, uiSkin));
         } else {
             Gdx.app.error("Main", "Cannot set game screen: currentGameState is null. Use startNewGameSession.");
-            setPreGameMenuScreen(); // Go to pre-game setup if no game state
+            setPreGameMenuScreen();
         }
     }
 

@@ -363,6 +363,13 @@ public class GameController extends InputAdapter {
         }
     }
 
+    // Add a public method to pause the game
+    public void pauseGame() {
+        if (gameState.getCurrentStatus() == GameStatus.PLAYING) {
+            gameState.setCurrentStatus(GameStatus.PAUSED);
+        }
+    }
+
     // --- InputAdapter Overrides ---
     @Override
     public boolean keyDown(int keycode) {

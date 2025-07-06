@@ -4,15 +4,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.minutestilldawn.game.Controller.GameMenuController;
 import com.minutestilldawn.game.Main;
 import com.minutestilldawn.game.Controller.GameController;
 import com.minutestilldawn.game.Controller.PauseMenuController;
@@ -34,6 +34,8 @@ public class GameMenuView extends BaseMenuView {
     private final Stage hudStage;
     private final Label timerLabel;
     private final Label statsLabel;
+    private final TextButton pauseButton;
+    private final Table hudTable;
 
     // Textures
     private final Texture mapTileTexture;
@@ -42,51 +44,136 @@ public class GameMenuView extends BaseMenuView {
     private PauseMenuView pauseMenuView;
     private boolean pauseMenuShown = false;
 
-    // Font for HUD
-    private final BitmapFont hudFont = new BitmapFont();
+    // UI elements
+    private Table userInfoTable;
 
-    public GameMenuView(GameMenuController controller, Skin skin) {
+    public GameMenuView(Main gameInstance, GameState gameState, GameAssetManager assetManager, Skin skin) {
         super(skin);
-        this.gameInstance = Main.getInstance();
-        this.gameState = gameInstance.getCurrentGameState();
-        this.assetManager = gameInstance.getAssetManager();
+        this.gameInstance = gameInstance;
+        this.gameState = gameState;
+        this.assetManager = assetManager;
         this.batch = Main.getBatch();
 
+        // Camera and viewport
         gameCamera = new OrthographicCamera();
-        gameViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), gameCamera);
-        gameCamera.setToOrtho(false, gameViewport.getWorldWidth(), gameViewport.getWorldHeight());
-
-        this.gameController = new GameController(gameInstance, gameState, assetManager, gameCamera);
-        Gdx.input.setInputProcessor(gameController);
+        gameViewport = new FitViewport(1280, 720, gameCamera);
+        gameCamera.setToOrtho(false, 1280, 720);
 
         shapeRenderer = new ShapeRenderer();
-
-        // HUD
-        hudStage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
-        timerLabel = new Label("", skin);
-        statsLabel = new Label("", skin);
-        table.top().left();
-        table.add(timerLabel).pad(10).row();
-        table.add(statsLabel).pad(10);
-        hudStage.addActor(table);
 
         // Load textures
         mapTileTexture = new Texture(Gdx.files.internal("pictures/MapTile.png"));
         mapTileTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+
+        // HUD
+        this.hudStage = new Stage(new FitViewport(1280, 720));
+        this.timerLabel = new Label("00:00", skin);
+        this.statsLabel = new Label("", skin);
+        this.pauseButton = new TextButton("II", skin);
+        this.hudTable = new Table();
+        this.hudTable.setFillParent(true);
+        // Top bar: timer (left), pause (right)
+        Table topRow = new Table();
+        topRow.top().left();
+        topRow.add(timerLabel).left().padLeft(16).padTop(8);
+        topRow.add().expandX();
+        topRow.add(pauseButton).right().padRight(16).padTop(8).size(36, 36);
+        hudTable.add(topRow).expandX().fillX().row();
+        // Stats label below
+        hudTable.add(statsLabel).left().padLeft(16).padTop(5).row();
+        hudStage.addActor(hudTable);
+
+        // User info box: always at top right, not inside hudTable
+        userInfoTable = new Table(skin);
+        userInfoTable.top().right();
+        userInfoTable.setWidth(220);
+        userInfoTable.setHeight(180);
+        userInfoTable.setPosition(1280 - 240, 720 - 40); // 20px from right, 40px from top
+        hudStage.addActor(userInfoTable);
+        updateUserInfoTable(); // Ensure info box is visible at start
+
+        // Pause button logic (fix size, always clickable)
+        pauseButton.addListener(new com.badlogic.gdx.scenes.scene2d.utils.ClickListener() {
+            @Override
+            public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
+                if (gameState.getCurrentStatus() == GameStatus.PLAYING) {
+                    gameState.setCurrentStatus(GameStatus.PAUSED);
+                    pauseMenuShown = false;
+                }
+            }
+        });
+
+        // --- GameController creation (with camera) ---
+        this.gameController = new GameController(gameInstance, gameState, assetManager, gameCamera);
+        Gdx.input.setInputProcessor(gameController);
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        gameViewport.update(width, height, true);
+        hudStage.getViewport().update(width, height, true);
+        // Always reposition user info table to the top right
+        userInfoTable.setPosition(width - 240, height - 40);
+    }
+
+    private void updateUserInfoTable() {
+        userInfoTable.clear();
+        Player player = gameState.getPlayerInstance();
+        if (player == null) return;
+        User user = player.getUser();
+        boolean isGuest = (user == null);
+        String usernameText = isGuest ? "Guest" : user.getUsername();
+        String avatarPath = isGuest ? GameAssetManager.Default_Avatar : "avatars/avatar" + user.getAvatarId() + ".png";
+        Texture avatarTexture = assetManager.getAvatarTexture(avatarPath);
+        if (avatarTexture != null) {
+            com.badlogic.gdx.scenes.scene2d.ui.Image avatarImg = new com.badlogic.gdx.scenes.scene2d.ui.Image(avatarTexture);
+            avatarImg.setSize(40, 40);
+            userInfoTable.add(avatarImg).colspan(2).padBottom(5).row();
+        }
+        userInfoTable.add(new Label("User: " + usernameText, userInfoTable.getSkin())).left().colspan(2).row();
+        if (!isGuest && user != null) {
+            userInfoTable.add(new Label("High Score:", userInfoTable.getSkin())).left();
+            userInfoTable.add(new Label(String.valueOf(user.getHighestScore()), userInfoTable.getSkin())).right().row();
+            userInfoTable.add(new Label("Kills:", userInfoTable.getSkin())).left();
+            userInfoTable.add(new Label(String.valueOf(user.getTotalKills()), userInfoTable.getSkin())).right().row();
+        }
+        userInfoTable.add(new Label("Weapon:", userInfoTable.getSkin())).left();
+        userInfoTable.add(new Label(player.getCurrentWeapon() != null ? player.getCurrentWeapon().getName() : "-", userInfoTable.getSkin())).right().row();
+        userInfoTable.add(new Label("Ammo:", userInfoTable.getSkin())).left();
+        userInfoTable.add(new Label(player.getCurrentWeapon() != null ? (player.getCurrentWeapon().getCurrentAmmo() + "/" + player.getCurrentWeapon().getMaxAmmo()) : "-", userInfoTable.getSkin())).right().row();
+        userInfoTable.add(new Label("XP:", userInfoTable.getSkin())).left();
+        userInfoTable.add(new Label(player.getXp() + "/" + player.getXpNeededForNextLevel(), userInfoTable.getSkin())).right().row();
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
+        // Only update timer/game state if not paused
+        if (gameState.getCurrentStatus() != GameStatus.PAUSED) {
+            gameState.update(delta);
+        }
+        float elapsedSeconds = gameState.getElapsedTimeSeconds();
+        timerLabel.setText(getFormattedTime(elapsedSeconds));
+        updateUserInfoTable();
         // Pause menu logic
         if (gameState.getCurrentStatus() == GameStatus.PAUSED) {
             if (!pauseMenuShown) {
                 if (pauseMenuView == null) {
-                    // Pass gameController to PauseMenuController for resume
-                    pauseMenuView = new PauseMenuView(new PauseMenuController(gameInstance, gameController), skin);
+                    pauseMenuView = new PauseMenuView(new PauseMenuController(gameInstance, gameController) {
+                        @Override
+                        public void onButtonClicked(String buttonId) {
+                            super.onButtonClicked(buttonId);
+                            if ("resume".equals(buttonId)) {
+                                gameState.setCurrentStatus(GameStatus.PLAYING);
+                                Gdx.input.setInputProcessor(gameController);
+                            }
+                        }
+                    }, skin);
                 }
                 hudStage.addActor(pauseMenuView.getTable());
                 pauseMenuShown = true;
+                Gdx.input.setInputProcessor(hudStage);
             }
             // Draw game world faded out
             batch.setProjectionMatrix(gameCamera.combined);
@@ -114,14 +201,11 @@ public class GameMenuView extends BaseMenuView {
                     batch.draw(gunTexture, px - gw/2, py - gh/2, gw/2, gh/2, gw, gh, 1, 1, angle, 0, 0, (int)gw, (int)gh, false, false);
                 }
             }
-            // Draw user info HUD (avatar, username, stats)
-            drawUserInfoHUD();
             batch.end();
-            // Draw HUD stage (timer, stats, pause menu)
+            // Draw HUD stage (timer, stats, pause menu, user info)
             hudStage.getViewport().apply();
             hudStage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
             hudStage.draw();
-            // Draw health bar
             drawHealthBar();
             return;
         } else if (pauseMenuShown) {
@@ -129,6 +213,18 @@ public class GameMenuView extends BaseMenuView {
                 pauseMenuView.getTable().remove();
             }
             pauseMenuShown = false;
+            Gdx.input.setInputProcessor(gameController);
+        }
+
+        // Handle ESC key for pause/resume
+        if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
+            if (gameState.getCurrentStatus() == GameStatus.PLAYING) {
+                gameState.setCurrentStatus(GameStatus.PAUSED);
+                pauseMenuShown = false;
+            } else if (gameState.getCurrentStatus() == GameStatus.PAUSED) {
+                gameState.setCurrentStatus(GameStatus.PLAYING);
+                Gdx.input.setInputProcessor(gameController);
+            }
         }
 
         gameController.update(delta);
@@ -164,33 +260,20 @@ public class GameMenuView extends BaseMenuView {
                 batch.draw(gunTexture, px - gw/2, py - gh/2, gw/2, gh/2, gw, gh, 1, 1, angle, 0, 0, (int)gw, (int)gh, false, false);
             }
         }
-        // Draw user info HUD (avatar, username, stats)
-        drawUserInfoHUD();
         batch.end();
 
-        drawHUD(); // Always draw HUD last
+        // Draw HUD stage (timer, stats, user info box)
+        hudStage.getViewport().apply();
+        hudStage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+        hudStage.draw();
+        drawHealthBar(); // HP bar at the bottom
     }
 
-    private void drawUserInfoHUD() {
-        Player player = gameState.getPlayerInstance();
-        User user = player.getUser();
-        boolean isGuest = (user == null);
-        String usernameText = isGuest ? "Guest" : user.getUsername();
-        String avatarPath = isGuest ? GameAssetManager.Default_Avatar : "avatars/avatar" + user.getAvatarId() + ".png";
-        Texture avatarTexture = assetManager.getAvatarTexture(avatarPath);
-        if (avatarTexture != null) {
-            batch.draw(avatarTexture, 10, Gdx.graphics.getHeight() - 110, 96, 96);
-        }
-        hudFont.setColor(Color.WHITE);
-        hudFont.getData().setScale(1.1f);
-        hudFont.draw(batch, usernameText, 110, Gdx.graphics.getHeight() - 30);
-        if (!isGuest && user != null) {
-            String stats = "Highest Score: " + user.getHighestScore() +
-                    "\nTotal Kills: " + user.getTotalKills() +
-                    "\nLongest Survival: " + String.format("%.1f s", user.getLongestSurvivalTimeSeconds());
-            hudFont.getData().setScale(0.9f);
-            hudFont.draw(batch, stats, 110, Gdx.graphics.getHeight() - 60);
-        }
+    private String getFormattedTime(float elapsedSeconds) {
+        int totalSeconds = (int) elapsedSeconds;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 
     private void drawHealthBar() {
@@ -199,7 +282,10 @@ public class GameMenuView extends BaseMenuView {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(Color.RED);
         float hpPercent = player.getCurrentHp() / (float) player.getMaxHp();
-        shapeRenderer.rect(10, Gdx.graphics.getHeight() - 50, (Gdx.graphics.getWidth() - 20) * hpPercent, 20);
+        float barWidth = Math.min(hudStage.getViewport().getWorldWidth() * 0.5f, 600f);
+        float barX = (hudStage.getViewport().getWorldWidth() - barWidth) / 2f;
+        float barY = 10f;
+        shapeRenderer.rect(barX, barY, barWidth * hpPercent, 24);
         shapeRenderer.end();
     }
 
@@ -227,66 +313,6 @@ public class GameMenuView extends BaseMenuView {
         for (Bullet bullet : gameController.getActiveEnemyBullets()) {
             if (bullet != null) bullet.draw(batch);
         }
-    }
-
-    private void drawHUD() {
-        // Improved HUD: timer, HP, XP, kills, weapon, ammo
-        Player player = gameState.getPlayerInstance();
-        int minutes = (int) gameState.getTimeRemainingSeconds() / 60;
-        int seconds = (int) gameState.getTimeRemainingSeconds() % 60;
-        String weaponName = player.getCurrentWeapon() != null ? player.getCurrentWeapon().getName() : "-";
-        int ammo = player.getCurrentWeapon() != null ? player.getCurrentWeapon().getCurrentAmmo() : 0;
-        int maxAmmo = player.getCurrentWeapon() != null ? player.getCurrentWeapon().getMaxAmmo() : 0;
-        timerLabel.setText("Time: " + String.format("%02d:%02d", minutes, seconds));
-        statsLabel.setText(
-                "HP: " + player.getCurrentHp() + "/" + player.getMaxHp() +
-                " | XP: " + player.getXp() + "/" + player.getXpNeededForNextLevel() +
-                " | Kills: " + gameState.getKills() +
-                " | Weapon: " + weaponName +
-                " | Ammo: " + ammo + "/" + maxAmmo
-        );
-
-        // --- USER INFO HUD ---
-        User user = player.getUser();
-        boolean isGuest = (user == null);
-        String usernameText = isGuest ? "Guest" : user.getUsername();
-        String avatarPath = isGuest ? GameAssetManager.Default_Avatar : "avatars/avatar" + user.getAvatarId() + ".png";
-        Texture avatarTexture = assetManager.getAvatarTexture(avatarPath);
-        batch.begin();
-        if (avatarTexture != null) {
-            batch.draw(avatarTexture, 10, Gdx.graphics.getHeight() - 110, 96, 96);
-        }
-        hudFont.setColor(Color.WHITE);
-        hudFont.getData().setScale(1.1f);
-        hudFont.draw(batch, usernameText, 110, Gdx.graphics.getHeight() - 30);
-        if (!isGuest && user != null) {
-            String stats = "Highest Score: " + user.getHighestScore() +
-                    "\nTotal Kills: " + user.getTotalKills() +
-                    "\nLongest Survival: " + String.format("%.1f s", user.getLongestSurvivalTimeSeconds());
-            hudFont.getData().setScale(0.9f);
-            hudFont.draw(batch, stats, 110, Gdx.graphics.getHeight() - 60);
-        }
-        batch.end();
-        // --- END USER INFO HUD ---
-
-        hudStage.getViewport().apply();
-        hudStage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
-        hudStage.draw();
-
-        // Health bar
-        shapeRenderer.setProjectionMatrix(hudStage.getCamera().combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.RED);
-        float hpPercent = player.getCurrentHp() / (float) player.getMaxHp();
-        shapeRenderer.rect(10, Gdx.graphics.getHeight() - 50, (Gdx.graphics.getWidth() - 20) * hpPercent, 20);
-        shapeRenderer.end();
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        super.resize(width, height);
-        gameViewport.update(width, height, true);
-        hudStage.getViewport().update(width, height, true);
     }
 
     @Override
